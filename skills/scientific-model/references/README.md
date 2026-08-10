@@ -16,6 +16,8 @@ right is unrestricted; putting its pixels in a deliverable is what the license g
 | `spinalcord-cauda-equina-gray662.png` | Cord ending at the conus medullaris, cauda equina below | Gray's Anatomy 1918, plate 662 — public domain |
 | `neuron-myelin-schwann-crosssection.png` | Concentric wrapped membrane layers around the axon | Source not recorded at cache time — verify before republishing |
 | `neuron-myelin-schwann-longitudinal.png` | One Schwann cell per internodal segment, nodes of Ranvier between | Source not recorded at cache time — verify before republishing |
+| `volcano-stratovolcano-crosssection.png` | Stratovolcano cross-section: outward-dipping layers, conduit, magma chamber | Source not recorded at cache time — verify before republishing |
+| `volcano-fuji-geological-section.png` | Geological section through Mt Fuji | Source not recorded at cache time — verify before republishing |
 
 **When you cache a new one, add its row here** with the source and license. A reference image with
 no recorded provenance can still be checked against, but it cannot be shipped — and a missing row
