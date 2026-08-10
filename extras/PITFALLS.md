@@ -231,8 +231,71 @@ intentional ones out loud, and leave `ignore-*` commands to the user.
 ## H. Measurement and science
 
 Not duplicated here. Those catalogues already exist and are working:
-- `~/.claude/skills/honest-measurement/pitfalls.md` - 16 rules (harness lying, warm-up
+- `~/.claude/skills/honest-measurement/pitfalls.md` - 17 rules (harness lying, warm-up
   bias, counterbalancing, liveness, proving the patch applied)
-- `~/.claude/skills/scientific-model/pitfalls.md` - ~20 rules (anatomy correctness)
-- `~/.claude/skills/ship-ritual/pitfalls.md` - 2 rules (release recording)
+- `~/.claude/skills/scientific-model/pitfalls.md` - 22 rules (anatomy correctness)
+- `~/.claude/skills/ship-ritual/pitfalls.md` - 4 rules (release recording)
 Read those before benchmarking or before drawing anything real.
+
+---
+
+## I. Publishing a repo to a public host (4 recorded failures, all 2026-08-10)
+
+All four came from one afternoon spent putting this package on GitHub. Publishing
+is unusually unforgiving: the mistakes are visible to strangers before you notice
+them, and several of them cannot be taken back by editing.
+
+**I1. Never seed a git identity from a nearby repo's config.**
+A fresh clone had no `user.email`, so the address was copied from a neighbouring
+repo on the same machine - the author's real personal one - and two commits went
+out with it. The host matched it to their account and printed their real name on
+the public repo's front page. They spotted it in a screenshot; the tooling never
+flagged it. Cost: two history rewrites and two delete-and-recreate cycles, which
+also destroyed the repo's rename redirect and broke a link already sent to someone.
+-> When a repo is or may become public, decide which identity to commit under
+BEFORE the first commit. A missing `user.email` is a question to ask, not a gap to
+fill from whatever is next door.
+
+**I2. `<name>@users.noreply.github.com` is NOT anonymous - it resolves to that user.**
+The first fix used a plausible-looking `<name>@users.noreply.github.com`. That form
+belongs to whoever actually holds the username, and in this case it was a real,
+long-standing account owned by an unrelated stranger - so the "anonymised" commits
+were now attributed to a person who had nothing to do with them. The genuinely
+unlinkable forms are `<numeric-id>+<name>@users.noreply.github.com` using your own
+ID, or a reserved domain such as `example.com`, which nobody can register.
+-> After any authorship rewrite, query the API for the pushed commit's
+`.author.login`. `NONE` is the pass condition. Reading the display name back is not
+enough - the name was already correct in the broken case.
+
+**I3. Run the check a backup exists for BEFORE deleting the backup.**
+With the rewrite pushed, deleting the pre-rewrite bundle looked obviously safe:
+`filter-branch --env-filter` touches author/committer variables and cannot alter
+file trees. True - and still the wrong basis, because that had been reasoned, not
+measured. Only blob counts on the remote had ever been checked, never a pre-vs-post
+tree comparison, and deleting the bundle would have made that comparison impossible
+forever. Running it took a minute and passed: all 6 pre-rewrite commits had
+byte-identical trees.
+-> A backup may be discarded once the verification it enables has actually been
+run, not once you have argued that it would pass. Ask what this artifact is the
+last copy of, and which question only it can answer.
+-> Give the comparison something it must still be able to see. Here it matched 6
+commits and flagged the 7th - a later commit, correctly absent from the bundle.
+That disagreeing line is the control; without one, "no differences" is
+indistinguishable from a comparison that silently examined nothing. See section C.
+
+**I4. On Windows, `core.autocrlf` makes a repo differ from its own source files.**
+Comparing the live skills against the checked-out repo reported all 234 files
+different, then a single file 418 lines different when it was byte-identical in
+substance. Cause: `core.autocrlf=true` (the Git-for-Windows default) stores LF in
+the index and writes CRLF into the working tree, while the source files git never
+touches stay LF. Commits are unaffected - git normalises back on the way in - but
+every naive diff, hash or file-compare between the two trees is pure noise, which
+either provokes a needless full re-sync or hides the two files that really are stale.
+Worse, the first attempt to *measure* the problem used a shell one-liner whose `\r`
+was eaten by quoting; it detected zero CRs and reported everything clean.
+-> Commit a `.gitattributes` with `* text=auto eol=lf` so the working tree matches
+the source and checkout is deterministic for everyone who clones, whatever their
+local setting. Until then compare with `diff --strip-trailing-cr`, or ask git
+directly with `git ls-files --eol`.
+-> A line-ending detector that reports "all clean" is the easiest thing in this
+file to get wrong. Test it against a file you know has CRLF before believing it.
