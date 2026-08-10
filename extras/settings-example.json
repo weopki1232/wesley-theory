@@ -1,0 +1,30 @@
+{
+  "env": {
+    "ECC_HOOK_PROFILE": "minimal",
+    "ECC_DISABLED_HOOKS": "pre:observe:continuous-learning,post:observe:continuous-learning,stop:evaluate-session"
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\<YOUR-USERNAME>\\.claude\\statusline.ps1\""
+  },
+  "enabledPlugins": {
+    "ecc@ecc": true,
+    "impeccable@impeccable": true,
+    "taste-skill@taste-skill": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "ecc": {
+      "source": { "source": "git", "url": "https://github.com/affaan-m/ECC.git" }
+    },
+    "impeccable": {
+      "source": { "source": "github", "repo": "pbakaus/impeccable" }
+    },
+    "taste-skill": {
+      "source": { "source": "github", "repo": "Leonxlnx/taste-skill" }
+    }
+  },
+  "autoUpdatesChannel": "latest",
+  "theme": "custom:warm-amber"
+}

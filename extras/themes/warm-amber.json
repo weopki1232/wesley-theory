@@ -1,0 +1,12 @@
+{
+  "name": "Warm Amber",
+  "base": "dark",
+  "overrides": {
+    "text": "#e0b070",
+    "selectionBg": "#d6336c",
+    "promptBorder": "#ff8c42",
+    "promptBorderShimmer": "#ffb27a",
+    "userMessageBackground": "#2a1c0d",
+    "userMessageBackgroundHover": "#3a2812"
+  }
+}

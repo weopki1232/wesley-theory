@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dark Motion — technique verification</title>
+<!--
+  Zero-dependency reference exercising the "confident tier" of the dark-motion-site skill:
+  split-text reveal · scroll-scrubbed SVG draw (sticky) · scroll parallax · marquee ·
+  counter roll-up · sticky stacking cards · theme-aware nav · IntersectionObserver reveals · grain.
+  Every effect is hand-rolled, single file. Built to be QA-verifiable (stable ids/classes).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0b0e; --ink:#eef1f6; --muted:#868c99; --line:rgba(255,255,255,.09);
+  --accent:#ff5e3a;
+  --f-disp:"Familjen Grotesk",sans-serif; --f-body:"Hanken Grotesk",sans-serif; --f-mono:"Space Mono",monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);line-height:1.5;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+.mono{font-family:var(--f-mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+h2{font-family:var(--f-disp);font-weight:600;letter-spacing:-.02em;font-size:clamp(30px,5vw,60px);line-height:1.02}
+
+/* grain + vignette */
+.grain{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.045;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ===== theme-aware nav ===== */
+nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;justify-content:space-between;align-items:center;
+  padding:20px 32px;transition:color .4s ease;mix-blend-mode:difference;color:#fff}
+nav .brand{font-family:var(--f-disp);font-weight:700;font-size:18px;letter-spacing:-.02em}
+nav .navlinks{display:flex;gap:22px}
+nav a{color:inherit;text-decoration:none;font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+
+/* ===== reveal ===== */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.reveal.vis{opacity:1;transform:none}
+
+/* ===== split text ===== */
+.split .w{display:inline-block;overflow:hidden;vertical-align:top}
+.split .i{display:inline-block;transform:translateY(115%);transition:transform .9s var(--ease);transition-delay:calc(var(--i)*45ms)}
+.split.in .i{transform:translateY(0)}
+h1.hero-h{font-family:var(--f-disp);font-weight:700;letter-spacing:-.04em;line-height:.94;font-size:clamp(48px,10vw,150px)}
+
+/* ===== hero + scroll parallax ===== */
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden}
+.hero .p-grid{position:absolute;inset:-15% -5%;z-index:0;opacity:.5;
+  background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.12) 1px,transparent 0);background-size:36px 36px}
+.hero .p-blob{position:absolute;z-index:0;width:52vw;height:52vw;border-radius:50%;right:-6%;top:6%;
+  background:radial-gradient(circle,rgba(255,94,58,.18),transparent 62%);filter:blur(20px)}
+.hero-inner{position:relative;z-index:2}
+.hero .sub{max-width:520px;margin-top:26px;color:var(--muted);font-size:18px}
+
+/* ===== marquee ===== */
+.marquee{border-block:1px solid var(--line);padding:24px 0;overflow:hidden;white-space:nowrap;display:flex}
+.marquee .track{display:inline-flex;gap:48px;padding-right:48px;animation:scrollx 22s linear infinite;will-change:transform}
+.marquee:hover .track{animation-play-state:paused}
+.marquee .track span{font-family:var(--f-disp);font-weight:600;font-size:clamp(22px,3.4vw,40px);color:var(--muted)}
+.marquee .track span b{color:var(--accent)}
+@keyframes scrollx{to{transform:translateX(-50%)}}
+
+/* ===== scroll-scrubbed draw ===== */
+.scrub-wrap{position:relative;height:320vh}
+.scrub-stage{position:sticky;top:0;height:100vh;display:grid;place-items:center;text-align:center}
+#scrubSvg{width:min(70vw,620px);height:auto}
+#scrubPath{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round}
+.scrub-pct{font-family:var(--f-mono);color:var(--muted);margin-top:18px;font-size:13px;letter-spacing:.2em}
+
+/* ===== counters ===== */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px}
+.stat{border:1px solid var(--line);border-radius:18px;padding:30px}
+.stat .num{font-family:var(--f-disp);font-weight:700;font-size:clamp(40px,6vw,76px);letter-spacing:-.03em;line-height:1}
+.stat .lbl{color:var(--muted);margin-top:8px;font-size:14px}
+@media(max-width:760px){.stats{grid-template-columns:1fr}}
+
+/* ===== sticky stacking cards ===== */
+.stack{position:relative}
+.stack .card{position:sticky;border-radius:22px;border:1px solid var(--line);padding:44px;min-height:64vh;
+  display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 -20px 60px rgba(0,0,0,.5)}
+.stack .card h3{font-family:var(--f-disp);font-weight:600;font-size:clamp(28px,4vw,48px);letter-spacing:-.02em}
+.stack .card p{color:var(--muted);max-width:46ch}
+.stack .card:nth-child(1){top:90px;background:#101218}
+.stack .card:nth-child(2){top:112px;background:#141017}
+.stack .card:nth-child(3){top:134px;background:#101416}
+.stack .card .k{font-family:var(--f-mono);color:var(--accent);font-size:13px}
+
+/* ===== light section (nav flip test) ===== */
+.light{background:#f2f0ea;color:#111}
+.light .mono{color:#6b6b6b}
+.light h2{color:#111}
+.light p{color:#4a4a4a;max-width:52ch;margin-top:16px}
+
+section{padding:120px 0;position:relative;z-index:2}
+footer{padding:80px 0;border-top:1px solid var(--line)}
+.foot-big{font-family:var(--f-disp);font-weight:700;letter-spacing:-.03em;font-size:clamp(44px,10vw,150px);line-height:.9}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.split .i{transform:none!important}}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<nav id="nav">
+  <div class="brand">MOTIONLAB</div>
+  <div class="navlinks"><a href="#">Work</a><a href="#">Studio</a><a href="#">Contact</a></div>
+</nav>
+
+<!-- HERO: split-text + scroll parallax -->
+<header class="hero" data-theme="dark">
+  <div class="p-grid" data-par="0.15"></div>
+  <div class="p-blob" data-par="0.30"></div>
+  <div class="wrap hero-inner">
+    <p class="mono" style="margin-bottom:22px">Technique verification · zero-dependency</p>
+    <h1 class="hero-h split" id="heroSplit">Motion that earns attention</h1>
+    <p class="sub">Each effect on this page is hand-rolled in one file — split text, scrubbed draw, stacking cards, marquee, counters, and a theme-aware nav.</p>
+  </div>
+</header>
+
+<!-- MARQUEE -->
+<div class="marquee" aria-hidden="true">
+  <div class="track">
+    <span>Split Text</span><span>Scroll Scrub</span><span>Parallax <b>✦</b></span><span>Sticky Stack</span><span>Counters</span><span>Marquee <b>✦</b></span>
+    <span>Split Text</span><span>Scroll Scrub</span><span>Parallax <b>✦</b></span><span>Sticky Stack</span><span>Counters</span><span>Marquee <b>✦</b></span>
+  </div>
+</div>
+
+<!-- SCROLL-SCRUBBED DRAW -->
+<div class="scrub-wrap" id="scrubWrap" data-theme="dark">
+  <div class="scrub-stage">
+    <div>
+      <p class="mono reveal" style="margin-bottom:26px">Scroll to draw — progress bound to scroll position</p>
+      <svg id="scrubSvg" viewBox="0 0 600 300">
+        <path id="scrubPath" d="M20,240 C120,40 200,40 300,150 C400,260 480,260 580,60"/>
+      </svg>
+      <div class="scrub-pct" id="scrubPct">0%</div>
+    </div>
+  </div>
+</div>
+
+<!-- COUNTERS -->
+<section data-theme="dark">
+  <div class="wrap">
+    <p class="mono reveal">Counters roll up on reveal</p>
+    <h2 class="reveal" style="margin-top:12px">The numbers animate<br>when they enter view.</h2>
+    <div class="stats">
+      <div class="stat reveal"><div class="num" data-count="128">0</div><div class="lbl">Projects shipped</div></div>
+      <div class="stat reveal"><div class="num" data-count="47" data-suffix="ms">0</div><div class="lbl">Avg. interaction latency</div></div>
+      <div class="stat reveal"><div class="num" data-count="100" data-suffix="%">0</div><div class="lbl">Zero-dependency</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- STICKY STACKING CARDS -->
+<section data-theme="dark">
+  <div class="wrap">
+    <p class="mono reveal" style="margin-bottom:40px">Cards stack as you scroll</p>
+    <div class="stack">
+      <div class="card"><div class="k">layer one</div><h3>Sticky stacking</h3><p>Each card is position:sticky with an increasing top offset, so they pile up instead of scrolling away.</p></div>
+      <div class="card"><div class="k">layer two</div><h3>Pure CSS depth</h3><p>No library — just sticky positioning and a soft top shadow to imply the stack.</p></div>
+      <div class="card"><div class="k">layer three</div><h3>Reads as motion</h3><p>The overlap plus the shadow gives a physical, layered feel as you move down the page.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- LIGHT SECTION (nav flip) -->
+<section class="light" data-theme="light">
+  <div class="wrap">
+    <p class="mono reveal">Theme-aware navigation</p>
+    <h2 class="reveal" style="margin-top:12px">The nav flips color over this light section.</h2>
+    <p class="reveal">The fixed nav uses <code>mix-blend-mode:difference</code> plus an observer on each section's <code>data-theme</code>, so it stays legible on both dark and light backgrounds automatically.</p>
+  </div>
+</section>
+
+<footer data-theme="dark">
+  <div class="wrap">
+    <p class="mono reveal">All effects verified · one file · no dependencies</p>
+    <div class="foot-big reveal">SHIP IT.</div>
+  </div>
+</footer>
+
+<script>
+/* ---------- split text ---------- */
+function splitWords(el){
+  const words=el.textContent.split(' ');
+  el.textContent='';
+  words.forEach((w,idx)=>{
+    const outer=document.createElement('span');outer.className='w';
+    const inner=document.createElement('span');inner.className='i';inner.style.setProperty('--i',idx);
+    inner.textContent=w;outer.appendChild(inner);
+    el.appendChild(outer);
+    if(idx<words.length-1) el.appendChild(document.createTextNode(' '));
+  });
+}
+document.querySelectorAll('.split').forEach(splitWords);
+
+/* ---------- reveals (reveal + split-in + counters) ---------- */
+const io=new IntersectionObserver((es)=>{es.forEach(e=>{
+  if(!e.isIntersecting)return;
+  const t=e.target;
+  t.classList.add('vis');
+  if(t.classList.contains('split'))t.classList.add('in');
+  if(t.querySelector&&t.querySelector('[data-count]'))/*noop*/;
+  io.unobserve(t);
+})},{threshold:.18});
+document.querySelectorAll('.reveal,.split').forEach(el=>io.observe(el));
+
+/* trigger the hero split immediately (it's above the fold) */
+requestAnimationFrame(()=>document.getElementById('heroSplit').classList.add('in'));
+
+/* ---------- counter roll-ups ---------- */
+const counters=[...document.querySelectorAll('[data-count]')];
+const cio=new IntersectionObserver((es)=>{es.forEach(e=>{
+  if(!e.isIntersecting)return;
+  const el=e.target, target=+el.dataset.count, suf=el.dataset.suffix||'';
+  const t0=performance.now(), dur=1400;
+  function step(now){
+    const p=Math.min(1,(now-t0)/dur), eased=1-Math.pow(1-p,3);
+    el.textContent=Math.round(eased*target)+suf;
+    if(p<1)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+  cio.unobserve(el);
+})},{threshold:.6});
+counters.forEach(c=>cio.observe(c));
+
+/* ---------- scroll-scrubbed draw ---------- */
+const scrubWrap=document.getElementById('scrubWrap');
+const scrubPath=document.getElementById('scrubPath');
+const scrubPct=document.getElementById('scrubPct');
+const plen=scrubPath.getTotalLength();
+scrubPath.style.strokeDasharray=plen; scrubPath.style.strokeDashoffset=plen;
+function scrub(){
+  const r=scrubWrap.getBoundingClientRect();
+  const total=scrubWrap.offsetHeight-innerHeight;
+  let p=Math.max(0,Math.min(1,(-r.top)/total));
+  scrubPath.style.strokeDashoffset=plen*(1-p);
+  scrubPct.textContent=Math.round(p*100)+'%';
+}
+
+/* ---------- scroll parallax ---------- */
+const pars=[...document.querySelectorAll('[data-par]')].map(el=>({el,k:parseFloat(el.dataset.par)}));
+function parallax(){
+  const y=scrollY;
+  pars.forEach(p=>{p.el.style.transform=`translateY(${y*p.k}px)`;});
+}
+
+/* ---------- theme-aware nav ---------- */
+const nav=document.getElementById('nav');
+const themed=[...document.querySelectorAll('[data-theme]')];
+const tio=new IntersectionObserver((es)=>{es.forEach(e=>{
+  if(e.isIntersecting)nav.dataset.over=e.target.dataset.theme;
+})},{rootMargin:'-10% 0px -85% 0px'});
+themed.forEach(s=>tio.observe(s));
+
+/* ---------- one scroll loop ---------- */
+addEventListener('scroll',()=>{scrub();parallax();},{passive:true});
+addEventListener('resize',()=>{scrub();parallax();});
+scrub();parallax();
+</script>
+</body>
+</html>

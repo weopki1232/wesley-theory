@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pointer FX — dark.design study</title>
+<!--
+  A zero-dependency study of the "when you move the mouse" effects seen on
+  landonorris.com / trionn.com. Single file, no libraries. Every effect is
+  driven by one mousemove + a requestAnimationFrame smoothing (lerp) loop.
+  Effects: custom cursor · magnetic buttons · pointer parallax hero ·
+  3D tilt-glare cards · cursor spotlight reveal · scroll reveals.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ===== TOKENS ===== */
+:root{
+  --bg:#08090c; --panel:#0e1015; --ink:#eef1f6; --muted:#878d9a;
+  --line:rgba(255,255,255,.09); --accent:#d7ff3e; --accent2:#6ea8ff;
+  --f-disp:"Familjen Grotesk",sans-serif; --f-body:"Hanken Grotesk",sans-serif; --f-mono:"Space Mono",monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;line-height:1.5}
+/* hide native cursor on pointer-fine devices, show our own */
+@media (hover:hover) and (pointer:fine){ body{cursor:none} a,button{cursor:none} }
+.wrap{max-width:1200px;margin:0 auto;padding:0 32px}
+.mono{font-family:var(--f-mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.accent{color:var(--accent)}
+
+/* ===== GRAIN + VIGNETTE ===== */
+.grain{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 0%,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* ===== CUSTOM CURSOR ===== */
+.cur-ring,.cur-dot{position:fixed;top:0;left:0;z-index:70;pointer-events:none;border-radius:50%;
+  transform:translate(-50%,-50%);will-change:transform}
+.cur-ring{width:38px;height:38px;border:1.5px solid rgba(255,255,255,.55);
+  transition:border-color .25s,background .25s}          /* size is animated via scale() in JS, not layout */
+.cur-dot{width:6px;height:6px;background:var(--accent)}
+.cur-ring.hot{border-color:var(--accent);background:rgba(215,255,62,.08)}
+@media (hover:none),(pointer:coarse){ .cur-ring,.cur-dot{display:none} body{cursor:auto} }
+
+/* ===== NAV ===== */
+nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+  padding:22px 32px;backdrop-filter:blur(8px);background:linear-gradient(to bottom,rgba(8,9,12,.7),transparent)}
+.brand{font-family:var(--f-disp);font-weight:700;letter-spacing:-.02em;font-size:19px}
+.brand b{color:var(--accent)}
+.navr{display:flex;gap:12px;align-items:center}
+.btn{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  padding:11px 18px;border-radius:40px;border:1px solid var(--line);color:var(--ink);background:transparent;
+  text-decoration:none;display:inline-block;will-change:transform;transition:background .2s,color .2s,border-color .2s}
+.btn.solid{background:var(--accent);color:#0a0a0a;border-color:var(--accent);font-weight:700}
+.btn:hover{border-color:var(--accent)}
+
+/* ===== HERO (pointer parallax) ===== */
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden}
+.hero .field{position:absolute;inset:-10% -5%;z-index:0;
+  background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.12) 1px,transparent 0);
+  background-size:34px 34px;will-change:transform;opacity:.5}
+.hero .glow{position:absolute;z-index:0;width:60vw;height:60vw;border-radius:50%;left:55%;top:8%;
+  background:radial-gradient(circle,rgba(110,168,255,.16),transparent 60%);filter:blur(30px);will-change:transform}
+.hero-inner{position:relative;z-index:2;width:100%}
+.eyebrow{display:flex;align-items:center;gap:12px;margin-bottom:26px}
+.eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px var(--accent)}
+h1{font-family:var(--f-disp);font-weight:700;letter-spacing:-.035em;line-height:.92;
+  font-size:clamp(52px,11vw,168px);will-change:transform}
+h1 .ol{color:transparent;-webkit-text-stroke:1.4px rgba(255,255,255,.5)}
+.sub{max-width:520px;margin-top:28px;color:var(--muted);font-size:18px;will-change:transform}
+.orb{position:absolute;z-index:1;right:6%;top:26%;width:min(30vw,340px);aspect-ratio:1;border-radius:50%;
+  background:conic-gradient(from 210deg,#0e1015,#1b2130,#0e1015 60%,#2a3450,#0e1015);
+  box-shadow:inset 0 0 60px rgba(0,0,0,.7),0 40px 120px rgba(0,0,0,.6);
+  border:1px solid var(--line);will-change:transform;display:grid;place-items:center}
+.orb .ring{position:absolute;inset:14%;border-radius:50%;border:1px dashed rgba(255,255,255,.18)}
+.orb .ln{font-family:var(--f-disp);font-weight:700;font-size:clamp(30px,4vw,54px);color:#dfe6f2}
+.scrollcue{position:absolute;bottom:30px;left:32px;z-index:3}
+
+/* ===== SECTION SHELL ===== */
+section{position:relative;z-index:2;padding:120px 0}
+.lede{font-family:var(--f-disp);font-weight:600;letter-spacing:-.02em;font-size:clamp(28px,4.4vw,54px);line-height:1.05;max-width:15ch}
+
+/* reveal on scroll */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .8s cubic-bezier(.2,.8,.2,1),transform .8s cubic-bezier(.2,.8,.2,1)}
+.reveal.vis{opacity:1;transform:none}
+
+/* ===== TILT CARDS ===== */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:56px}
+.tilt{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:30px;
+  min-height:280px;transform-style:preserve-3d;will-change:transform;transition:transform .12s ease-out;
+  display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.tilt .glare{position:absolute;inset:0;border-radius:20px;pointer-events:none;opacity:0;
+  background:radial-gradient(300px circle at var(--gx,50%) var(--gy,50%),rgba(215,255,62,.16),transparent 60%);transition:opacity .2s}
+.tilt:hover .glare{opacity:1}
+.tilt .n{font-family:var(--f-mono);color:var(--accent);font-size:13px}
+.tilt h3{font-family:var(--f-disp);font-weight:600;font-size:26px;letter-spacing:-.01em;transform:translateZ(38px)}
+.tilt p{color:var(--muted);font-size:15px;transform:translateZ(20px)}
+@media(max-width:820px){.cards{grid-template-columns:1fr}}
+
+/* ===== SPOTLIGHT REVEAL ===== */
+.spot{position:relative;border-radius:24px;border:1px solid var(--line);overflow:hidden;
+  min-height:60vh;display:grid;place-items:center;text-align:center;background:#0b0d12}
+.spot .masklayer{position:absolute;inset:0;
+  background:linear-gradient(120deg,var(--accent),var(--accent2));
+  -webkit-mask:radial-gradient(220px circle at var(--mx,50%) var(--my,50%),#000 0,transparent 65%);
+          mask:radial-gradient(220px circle at var(--mx,50%) var(--my,50%),#000 0,transparent 65%);
+  display:grid;place-items:center}
+.spot .big{font-family:var(--f-disp);font-weight:700;letter-spacing:-.03em;font-size:clamp(40px,8vw,120px);line-height:.95}
+.spot .base{color:#20242c}
+.spot .over{color:#0a0a0a}
+
+footer{border-top:1px solid var(--line);padding:60px 0 90px;position:relative;z-index:2}
+.foot-big{font-family:var(--f-disp);font-weight:700;letter-spacing:-.03em;font-size:clamp(40px,9vw,140px);line-height:.9}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="vignette"></div>
+<div class="cur-ring" id="ring"></div>
+<div class="cur-dot" id="dot"></div>
+
+<!-- ===== NAV ===== -->
+<nav>
+  <div class="brand">POINTER<b>/</b>FX</div>
+  <div class="navr">
+    <a class="btn mag" href="#work">Work</a>
+    <a class="btn solid mag" href="#store">Store ↗</a>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<header class="hero" id="hero">
+  <div class="field" data-par="0.02"></div>
+  <div class="glow" data-par="0.06"></div>
+  <div class="orb" id="orb"><div class="ring"></div><span class="ln">FX</span></div>
+  <div class="wrap hero-inner">
+    <div class="eyebrow"><span class="dot"></span><span class="mono">Move your mouse — everything responds</span></div>
+    <h1 data-par="-0.03">MOTION<br>THAT <span class="ol">FEELS</span><br>ALIVE</h1>
+    <p class="sub" data-par="-0.05">A zero-dependency study of the pointer-driven effects behind award-winning dark sites. Custom cursor, magnetic buttons, parallax, 3D tilt, and a spotlight that follows you.</p>
+  </div>
+  <div class="scrollcue mono">Scroll ↓</div>
+</header>
+
+<!-- ===== TILT CARDS ===== -->
+<section id="work">
+  <div class="wrap">
+    <p class="mono reveal">Hover the cards</p>
+    <h2 class="lede reveal" style="margin-top:14px">Cards that tilt toward your cursor, with a live glare.</h2>
+    <div class="cards">
+      <div class="tilt reveal"><div class="glare"></div><div class="n">lean ✦</div><div><h3>Magnetic</h3><p>Buttons lean toward the pointer as it approaches, then snap back.</p></div></div>
+      <div class="tilt reveal"><div class="glare"></div><div class="n">depth ✦</div><div><h3>Parallax</h3><p>Foreground and background layers move at different rates for depth.</p></div></div>
+      <div class="tilt reveal"><div class="glare"></div><div class="n">reveal ✦</div><div><h3>Spotlight</h3><p>A light mask tracks the cursor and reveals what's underneath.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SPOTLIGHT REVEAL ===== -->
+<section id="store">
+  <div class="wrap">
+    <p class="mono reveal" style="margin-bottom:24px">Move across the panel</p>
+    <div class="spot" id="spot">
+      <div class="big base">HIDDEN IN<br>THE DARK</div>
+      <div class="masklayer"><div class="big over">FOUND BY<br>YOUR CURSOR</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="wrap">
+    <p class="mono reveal">Built zero-dependency · one mousemove + one rAF loop</p>
+    <div class="foot-big reveal">LET'S<br>MOVE.</div>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   ONE pointer state, ONE rAF loop drives every effect.
+   mouse = raw target · sm = smoothed (lerp) value.
+   ============================================================ */
+const mouse={x:innerWidth/2,y:innerHeight/2};
+const sm={x:mouse.x,y:mouse.y};
+addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;},{passive:true});
+const lerp=(a,b,n)=>a+(b-a)*n;
+
+/* --- custom cursor --- */
+const ring=document.getElementById('ring'),dot=document.getElementById('dot');
+const rp={x:mouse.x,y:mouse.y};
+document.querySelectorAll('a,button,.tilt').forEach(el=>{
+  el.addEventListener('pointerenter',()=>ring.classList.add('hot'));
+  el.addEventListener('pointerleave',()=>ring.classList.remove('hot'));
+});
+addEventListener('pointerdown',()=>ring.classList.add('down'));
+addEventListener('pointerup',()=>ring.classList.remove('down'));
+
+/* --- magnetic buttons --- */
+const mags=[...document.querySelectorAll('.mag')];
+
+/* --- hero parallax layers --- */
+const pars=[...document.querySelectorAll('[data-par]')].map(el=>({el,k:parseFloat(el.dataset.par)}));
+const orb=document.getElementById('orb');
+
+/* --- spotlight panel --- */
+const spot=document.getElementById('spot');
+spot.addEventListener('pointermove',e=>{
+  const r=spot.getBoundingClientRect();
+  spot.querySelector('.masklayer').style.setProperty('--mx',(e.clientX-r.left)+'px');
+  spot.querySelector('.masklayer').style.setProperty('--my',(e.clientY-r.top)+'px');
+});
+
+/* --- tilt cards --- */
+document.querySelectorAll('.tilt').forEach(card=>{
+  card.addEventListener('pointermove',e=>{
+    const r=card.getBoundingClientRect();
+    const px=(e.clientX-r.left)/r.width, py=(e.clientY-r.top)/r.height;
+    card.style.transform=`perspective(800px) rotateY(${(px-.5)*14}deg) rotateX(${(.5-py)*14}deg) translateY(-4px)`;
+    card.querySelector('.glare').style.setProperty('--gx',px*100+'%');
+    card.querySelector('.glare').style.setProperty('--gy',py*100+'%');
+  });
+  card.addEventListener('pointerleave',()=>{card.style.transform='';});
+});
+
+/* --- the single loop --- */
+let rs=1;                                       // smoothed cursor-ring scale
+function frame(){
+  sm.x=lerp(sm.x,mouse.x,.15); sm.y=lerp(sm.y,mouse.y,.15);
+  rp.x=lerp(rp.x,mouse.x,.22);  rp.y=lerp(rp.y,mouse.y,.22);
+  // ring size via smoothed scale (composited) instead of animating width/height
+  const target=ring.classList.contains('down')?.7:ring.classList.contains('hot')?1.7:1;
+  rs=lerp(rs,target,.2);
+  ring.style.transform=`translate(${rp.x}px,${rp.y}px) translate(-50%,-50%) scale(${rs})`;
+  dot.style.transform=`translate(${mouse.x}px,${mouse.y}px) translate(-50%,-50%)`;
+
+  // parallax from smoothed offset relative to screen centre
+  const ox=(sm.x/innerWidth-.5), oy=(sm.y/innerHeight-.5);
+  pars.forEach(p=>{p.el.style.transform=`translate(${ox*p.k*260}px,${oy*p.k*260}px)`;});
+  orb.style.transform=`translate(${ox*-40}px,${oy*-40}px) rotateY(${ox*22}deg) rotateX(${oy*-22}deg)`;
+
+  // magnetic buttons — pull toward the pointer within range, ease back otherwise
+  mags.forEach(b=>{
+    const r=b.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2;
+    const dx=mouse.x-cx, dy=mouse.y-cy, dist=Math.hypot(dx,dy);
+    const cur=b._m||{x:0,y:0};
+    const tx=dist<120?dx*.32:0, ty=dist<120?dy*.32:0;
+    cur.x=lerp(cur.x,tx,.2); cur.y=lerp(cur.y,ty,.2); b._m=cur;
+    b.style.transform=`translate(${cur.x}px,${cur.y}px)`;
+  });
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* --- scroll reveals --- */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis')}),{threshold:.14});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dark Motion Slides — deck technique study</title>
+<!--
+  Lesson 03 of the dark-motion-site study: the SLIDE DECK translation.
+  Fuses the frontend-slides step engine (data-steps / data-from) with the
+  verified dark-motion vocabulary (custom cursor, magnetic, parallax, tilt,
+  spotlight, split-text, counters, marquee, grain) and adds the deck-specific
+  technique: a Taxi.js-style CURTAIN WIPE between slides, with re-triggerable
+  split-text + counter roll-ups on every slide entry.
+  Zero dependencies. One file. QA-verifiable stable ids/classes.
+  Navigate: → / ← , space, wheel, swipe, or click the side pips.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08090c; --panel:#0e1015; --ink:#eef1f6; --muted:#878d9a;
+  --line:rgba(255,255,255,.09); --accent:#d7ff3e; --accent2:#6ea8ff;
+  --f-disp:"Familjen Grotesk",sans-serif; --f-body:"Hanken Grotesk",sans-serif; --f-mono:"Space Mono",monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);line-height:1.5;-webkit-font-smoothing:antialiased}
+@media (hover:hover) and (pointer:fine){ body,a,button{cursor:none} }
+.mono{font-family:var(--f-mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.accent{color:var(--accent)}
+
+/* ===== grain + vignette ===== */
+.grain{position:fixed;inset:0;z-index:80;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 0%,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* ===== custom cursor ===== */
+.cur-ring,.cur-dot{position:fixed;top:0;left:0;z-index:90;pointer-events:none;border-radius:50%;
+  transform:translate(-50%,-50%);will-change:transform}
+.cur-ring{width:38px;height:38px;border:1.5px solid rgba(255,255,255,.55);transition:border-color .25s,background .25s}
+.cur-dot{width:6px;height:6px;background:var(--accent)}
+.cur-ring.hot{border-color:var(--accent);background:rgba(215,255,62,.08)}
+@media (hover:none),(pointer:coarse){ .cur-ring,.cur-dot{display:none} body{cursor:auto} }
+
+/* ===== curtain wipe (Taxi.js-style page transition → slide transition) ===== */
+.curtain{position:fixed;inset:0;z-index:70;background:#0c0e13;transform:translateY(102%);
+  will-change:transform;display:grid;place-items:center;pointer-events:none}
+.curtain.move{transition:transform .46s cubic-bezier(.65,0,.35,1)}
+.curtain.cover{transform:translateY(0)}
+.curtain.exit{transform:translateY(-102%)}
+.curtain .tag{font-family:var(--f-mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);
+  opacity:0;transition:opacity .2s}
+.curtain.cover .tag{opacity:1}
+
+/* ===== deck shell ===== */
+.slide{position:fixed;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;
+  visibility:hidden;opacity:0;transform:scale(.985)}
+.slide.active{visibility:visible;opacity:1;transform:scale(1);transition:opacity .3s var(--ease),transform .5s var(--ease)}
+.slide-inner{width:min(1160px,90vw);position:relative;z-index:2}
+
+/* ===== HUD ===== */
+.hud{position:fixed;z-index:60;pointer-events:none}
+.hud.tl{top:24px;left:32px;display:flex;gap:12px;align-items:center}
+.hud.tl .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px var(--accent)}
+.hud.bl{bottom:24px;left:32px}
+.hud.br{bottom:24px;right:32px}
+.hud.count b{color:var(--ink)}
+.pips{position:fixed;right:28px;top:50%;transform:translateY(-50%);z-index:60;display:flex;flex-direction:column;gap:14px}
+.pips button{width:26px;height:26px;border-radius:50%;border:0;background:transparent;display:grid;place-items:center;
+  will-change:transform}
+.pips button i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.28);transition:background .3s,transform .3s;display:block}
+.pips button.on i{background:var(--accent);transform:scale(1.5);box-shadow:0 0 12px var(--accent)}
+/* step progress bar (scaleX, not width: compositor-only) */
+.stepbar{position:fixed;left:0;bottom:0;height:2px;background:var(--accent);z-index:60;width:100vw;
+  transform:scaleX(0);transform-origin:0 50%;transition:transform .5s var(--ease);
+  box-shadow:0 0 10px var(--accent);will-change:transform}
+
+/* ===== split text ===== */
+.split .w{display:inline-block;overflow:hidden;vertical-align:top}
+.split .i{display:inline-block;transform:translateY(115%);transition:transform .9s var(--ease);transition-delay:calc(var(--i)*45ms)}
+.split.in .i{transform:translateY(0)}
+
+/* ===== step reveals ===== */
+.fade{opacity:0;transform:translateY(26px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.fade.show{opacity:1;transform:none}
+
+/* ===== typography ===== */
+h1{font-family:var(--f-disp);font-weight:700;letter-spacing:-.04em;line-height:.92;font-size:clamp(52px,10.5vw,158px)}
+h1 .ol{color:transparent;-webkit-text-stroke:1.4px rgba(255,255,255,.5)}
+h2{font-family:var(--f-disp);font-weight:600;letter-spacing:-.02em;font-size:clamp(32px,5vw,64px);line-height:1.02}
+.eyebrow{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px var(--accent)}
+.sub{max-width:540px;margin-top:24px;color:var(--muted);font-size:18px}
+
+/* ===== s1 title parallax field ===== */
+.field{position:absolute;inset:-12% -6%;z-index:0;opacity:.5;will-change:transform;
+  background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.12) 1px,transparent 0);background-size:34px 34px}
+.glow{position:absolute;z-index:0;width:58vw;height:58vw;border-radius:50%;left:56%;top:-10%;will-change:transform;
+  background:radial-gradient(circle,rgba(110,168,255,.15),transparent 60%);filter:blur(30px)}
+.slide .field,.slide .glow{position:absolute}
+
+/* ===== s2 recipe rows ===== */
+.rows{margin-top:52px;display:flex;flex-direction:column}
+.row{display:flex;align-items:baseline;gap:26px;padding:26px 0;border-top:1px solid var(--line)}
+.row:last-child{border-bottom:1px solid var(--line)}
+.row .k{font-family:var(--f-mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);min-width:130px}
+.row .t{font-family:var(--f-disp);font-weight:600;font-size:clamp(20px,2.6vw,32px);letter-spacing:-.01em}
+.row .d{color:var(--muted);font-size:15px;margin-left:auto;max-width:34ch;text-align:right}
+@media(max-width:820px){.row{flex-wrap:wrap}.row .d{text-align:left;margin-left:0}}
+
+/* ===== s3 stats ===== */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:52px}
+.stat{border:1px solid var(--line);border-radius:18px;padding:30px;background:rgba(255,255,255,.015)}
+.stat .num{font-family:var(--f-disp);font-weight:700;font-size:clamp(40px,6vw,76px);letter-spacing:-.03em;line-height:1}
+.stat .lbl{color:var(--muted);margin-top:8px;font-size:14px}
+@media(max-width:760px){.stats{grid-template-columns:1fr}}
+
+/* ===== s4 tilt cards ===== */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:52px}
+.tilt{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:28px;
+  min-height:250px;transform-style:preserve-3d;will-change:transform;transition:transform .12s ease-out;
+  display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.tilt .glare{position:absolute;inset:0;border-radius:20px;pointer-events:none;opacity:0;
+  background:radial-gradient(300px circle at var(--gx,50%) var(--gy,50%),rgba(215,255,62,.16),transparent 60%);transition:opacity .2s}
+.tilt:hover .glare{opacity:1}
+.tilt .n{font-family:var(--f-mono);color:var(--accent);font-size:13px}
+.tilt h3{font-family:var(--f-disp);font-weight:600;font-size:24px;letter-spacing:-.01em;transform:translateZ(38px)}
+.tilt p{color:var(--muted);font-size:15px;transform:translateZ(20px)}
+@media(max-width:820px){.cards{grid-template-columns:1fr}.tilt{min-height:0}}
+
+/* ===== s5 spotlight ===== */
+.spot{position:relative;border-radius:24px;border:1px solid var(--line);overflow:hidden;margin-top:40px;
+  min-height:52vh;display:grid;place-items:center;text-align:center;background:#0b0d12}
+.spot .masklayer{position:absolute;inset:0;background:linear-gradient(120deg,var(--accent),var(--accent2));
+  -webkit-mask:radial-gradient(220px circle at var(--mx,50%) var(--my,50%),#000 0,transparent 65%);
+          mask:radial-gradient(220px circle at var(--mx,50%) var(--my,50%),#000 0,transparent 65%);
+  display:grid;place-items:center}
+.spot .big{font-family:var(--f-disp);font-weight:700;letter-spacing:-.03em;font-size:clamp(36px,7vw,104px);line-height:.95}
+.spot .base{color:#20242c}
+.spot .over{color:#0a0a0a}
+
+/* ===== s6 closing ===== */
+.marquee{border-block:1px solid var(--line);padding:20px 0;overflow:hidden;white-space:nowrap;display:flex;margin:0 -50vw 44px;padding-inline:0}
+.marquee .track{display:inline-flex;gap:48px;padding-right:48px;animation:scrollx 22s linear infinite;will-change:transform}
+.marquee:hover .track{animation-play-state:paused}
+.marquee .track span{font-family:var(--f-disp);font-weight:600;font-size:clamp(20px,3vw,36px);color:var(--muted)}
+.marquee .track span b{color:var(--accent)}
+@keyframes scrollx{to{transform:translateX(-50%)}}
+.btn{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  padding:12px 20px;border-radius:40px;border:1px solid var(--line);color:var(--ink);background:transparent;
+  display:inline-block;will-change:transform;transition:background .2s,color .2s,border-color .2s;margin-top:34px}
+.btn.solid{background:var(--accent);color:#0a0a0a;border-color:var(--accent);font-weight:700}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+  .split .i{transform:none!important}
+  .slide{transform:none}
+}
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="vignette"></div>
+<div class="cur-ring" id="ring"></div>
+<div class="cur-dot" id="dot"></div>
+<div class="curtain" id="curtain"><span class="tag" id="curtag">01</span></div>
+<div class="stepbar" id="stepbar"></div>
+
+<!-- HUD -->
+<div class="hud tl"><span class="dot"></span><span class="mono">Dark Motion · Lesson Three · Slides</span></div>
+<div class="hud bl mono count" id="counter"><b>01</b> / 06</div>
+<div class="hud br mono">← → · space · wheel</div>
+<div class="pips" id="pips"></div>
+
+<!-- S1 · TITLE -->
+<section class="slide" id="s1">
+  <div class="field" data-par="0.02"></div>
+  <div class="glow" data-par="0.06"></div>
+  <div class="slide-inner">
+    <div class="eyebrow"><span class="dot"></span><span class="mono">The deck translation · zero-dependency</span></div>
+    <h1 class="split">SLIDES THAT MOVE LIKE THE SITES YOU COLLECT</h1>
+    <p class="sub" data-par="-0.04">Every technique from the site studies (cursor, parallax, split text, tilt, spotlight) rebuilt inside a keyboard-driven presentation engine with a curtain-wipe transition.</p>
+  </div>
+</section>
+
+<!-- S2 · THE RECIPE (step reveals) -->
+<section class="slide" id="s2" data-steps="3">
+  <div class="slide-inner">
+    <p class="mono">The recipe · press → to reveal</p>
+    <h2 class="split" style="margin-top:14px">Three rules carry the whole aesthetic.</h2>
+    <div class="rows">
+      <div class="row fade" data-from="1"><span class="k">Canvas</span><span class="t">Near-black, never black</span><span class="d">A #08090c field, hairline borders, and one volt accent. Nothing else.</span></div>
+      <div class="row fade" data-from="2"><span class="k">Type</span><span class="t">Mono for the machinery</span><span class="d">Eyebrows, HUD, counters and labels set in a mono at .2em tracking.</span></div>
+      <div class="row fade" data-from="3"><span class="k">Motion</span><span class="t">Motion answers the hand</span><span class="d">Pointer and keys cause everything; nothing loops for decoration.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- S3 · COUNTERS (re-triggerable roll-ups per step) -->
+<section class="slide" id="s3" data-steps="3">
+  <div class="slide-inner">
+    <p class="mono">Numbers roll up per step, and replay on re-entry</p>
+    <h2 class="split" style="margin-top:14px">Counters belong to the step engine now.</h2>
+    <div class="stats">
+      <div class="stat fade" data-from="1"><div class="num" data-count="14">0</div><div class="lbl">Techniques verified across three demos</div></div>
+      <div class="stat fade" data-from="2"><div class="num" data-count="460" data-suffix="ms">0</div><div class="lbl">Curtain wipe: cover, swap, exit</div></div>
+      <div class="stat fade" data-from="3"><div class="num" data-count="0" data-suffix=" deps">0</div><div class="lbl">Libraries used. Still zero.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- S4 · TILT CARDS -->
+<section class="slide" id="s4">
+  <div class="slide-inner">
+    <p class="mono">Hover the cards · slides stay interactive</p>
+    <h2 class="split" style="margin-top:14px">A slide is just a small dark site.</h2>
+    <div class="cards">
+      <div class="tilt"><div class="glare"></div><div class="n">tilt ✦</div><div><h3>3D tilt + glare</h3><p>rotateX/Y from the local pointer, radial glare riding --gx/--gy.</p></div></div>
+      <div class="tilt"><div class="glare"></div><div class="n">depth ✦</div><div><h3>Preserve-3d</h3><p>Inner content lifted with translateZ for genuine parallax depth.</p></div></div>
+      <div class="tilt"><div class="glare"></div><div class="n">reset ✦</div><div><h3>Pointer leave</h3><p>Transform clears on leave so cards settle back to rest.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- S5 · SPOTLIGHT -->
+<section class="slide" id="s5">
+  <div class="slide-inner">
+    <p class="mono">Move across the panel · the mask follows</p>
+    <h2 class="split" style="margin-top:14px">The reveal moment, on a slide.</h2>
+    <div class="spot" id="spot">
+      <div class="big base">THE POINT<br>IS HIDDEN</div>
+      <div class="masklayer"><div class="big over">UNTIL YOU<br>GO LOOKING</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- S6 · CLOSING -->
+<section class="slide" id="s6">
+  <div class="slide-inner" style="text-align:center">
+    <div class="marquee" aria-hidden="true">
+      <div class="track">
+        <span>Curtain Wipe</span><span>Split Text <b>✦</b></span><span>Step Engine</span><span>Counters</span><span>Tilt <b>✦</b></span><span>Spotlight</span>
+        <span>Curtain Wipe</span><span>Split Text <b>✦</b></span><span>Step Engine</span><span>Counters</span><span>Tilt <b>✦</b></span><span>Spotlight</span>
+      </div>
+    </div>
+    <h1 class="split">PRESENT<br>IN THE <span class="ol">DARK.</span></h1>
+    <button class="btn solid mag" id="restart">Replay deck ↺</button>
+  </div>
+</section>
+
+<script>
+/* ============================================================
+   DECK ENGINE: slides + steps + curtain wipe.
+   state = (s, step). → advances step until data-steps, then wipes
+   to the next slide. Split text & counters RE-TRIGGER on entry.
+   ============================================================ */
+const slides=[...document.querySelectorAll('.slide')];
+const curtain=document.getElementById('curtain'), curtag=document.getElementById('curtag');
+const counterHud=document.getElementById('counter'), stepbar=document.getElementById('stepbar');
+const pipsBox=document.getElementById('pips');
+let s=0, step=0, busy=false;
+const steps=i=>+(slides[i].dataset.steps||0);
+const pad=n=>String(n+1).padStart(2,'0');
+
+/* pips */
+slides.forEach((_,i)=>{
+  const b=document.createElement('button');b.className='mag';b.setAttribute('aria-label','slide '+(i+1));
+  b.appendChild(document.createElement('i'));
+  b.addEventListener('click',()=>{ if(i!==s) wipeTo(i); });
+  pipsBox.appendChild(b);
+});
+const pips=[...pipsBox.children];
+
+/* split text */
+function splitWords(el){
+  const words=el.textContent.split(/\s+/).filter(Boolean);
+  el.innerHTML='';
+  let i=0;
+  // keep intentional <br> by splitting original HTML lines
+  el.dataset.splitDone='1';
+  words.forEach((w,idx)=>{
+    const outer=document.createElement('span');outer.className='w';
+    const inner=document.createElement('span');inner.className='i';inner.style.setProperty('--i',idx);
+    inner.textContent=w;outer.appendChild(inner);
+    el.appendChild(outer);
+    if(idx<words.length-1)el.appendChild(document.createTextNode(' '));
+  });
+}
+document.querySelectorAll('.split').forEach(el=>{
+  if(el.querySelector('br')){ // split per line to preserve breaks
+    const parts=el.innerHTML.split(/<br\s*\/?>/i);
+    el.innerHTML='';let idx=0;
+    parts.forEach((line,li)=>{
+      const tmp=document.createElement('span');tmp.innerHTML=line;
+      tmp.textContent.split(/\s+/).filter(Boolean).forEach(w=>{
+        const outer=document.createElement('span');outer.className='w';
+        const inner=document.createElement('span');inner.className='i';inner.style.setProperty('--i',idx++);
+        // preserve outline-styled words
+        if(line.includes('class="ol"')&&tmp.querySelector('.ol')&&tmp.querySelector('.ol').textContent.includes(w)) inner.classList.add('ol');
+        inner.textContent=w;outer.appendChild(inner);
+        el.appendChild(outer);el.appendChild(document.createTextNode(' '));
+      });
+      if(li<parts.length-1)el.appendChild(document.createElement('br'));
+    });
+  } else splitWords(el);
+});
+
+/* re-trigger split on slide entry */
+function replaySplit(slide){
+  slide.querySelectorAll('.split').forEach(el=>{
+    el.classList.remove('in');
+    void el.offsetWidth;              // force reflow so the transition restarts
+    requestAnimationFrame(()=>el.classList.add('in'));
+  });
+}
+
+/* counters: roll up when their step shows; reset on slide entry */
+function rollCounter(el){
+  const target=+el.dataset.count, suf=el.dataset.suffix||'';
+  const t0=performance.now(), dur=1200;
+  const token=el._tok=(el._tok||0)+1;           // cancel a previous roll if re-triggered
+  (function stepFn(now){
+    if(el._tok!==token)return;
+    const p=Math.min(1,(now-t0)/dur), eased=1-Math.pow(1-p,3);
+    el.textContent=Math.round(eased*target)+suf;
+    if(p<1)requestAnimationFrame(stepFn);
+  })(t0);
+}
+function resetCounters(slide){
+  slide.querySelectorAll('[data-count]').forEach(el=>{el._tok=(el._tok||0)+1;el._rolled=false;
+    el.textContent='0'+(el.dataset.suffix||'');});
+}
+
+/* apply current (s, step) */
+function apply(){
+  const slide=slides[s];
+  slide.dataset.step=step;
+  slide.querySelectorAll('[data-from]').forEach(el=>{
+    const k=+el.dataset.from, show=step>=k;
+    el.classList.toggle('show',show);
+    if(show){ const c=el.querySelector('[data-count]');
+      if(c&&!c._rolled){c._rolled=true;rollCounter(c);} }
+  });
+  const n=steps(s);
+  stepbar.style.transform='scaleX('+(n?step/n:0)+')';
+  counterHud.innerHTML='<b>'+pad(s)+'</b> / '+pad(slides.length-1);
+  pips.forEach((p,i)=>p.classList.toggle('on',i===s));
+}
+
+/* curtain wipe to another slide */
+const WIPE_MS=460;
+/* transitionend is unreliable: it bubbles from the .tag's opacity transition, and a
+   throttled background tab can delay it far past the real duration. Race it with a timer. */
+function phaseDone(el,dur){
+  return new Promise(res=>{
+    let done=false;
+    const finish=()=>{ if(done)return; done=true; el.removeEventListener('transitionend',onEnd); res(); };
+    const onEnd=e=>{ if(e.target===el&&e.propertyName==='transform')finish(); };
+    el.addEventListener('transitionend',onEnd);
+    setTimeout(finish,dur+80);
+  });
+}
+async function wipeTo(i,atEnd=false){
+  if(busy)return; busy=true;
+  curtag.textContent=pad(i);
+  curtain.classList.add('move','cover');
+  await phaseDone(curtain,WIPE_MS);
+  // swap while covered. Backward nav lands on the LAST step (deck convention),
+  // with counters already at their final values — no replayed roll-ups.
+  slides[s].classList.remove('active');
+  s=i; step=atEnd?steps(i):0;
+  const slide=slides[s];
+  resetCounters(slide);
+  if(atEnd)slide.querySelectorAll('[data-count]').forEach(el=>{
+    el._rolled=true;el.textContent=el.dataset.count+(el.dataset.suffix||'');});
+  slide.querySelectorAll('[data-from]').forEach(el=>el.classList.remove('show'));
+  slide.classList.add('active');
+  apply();
+  replaySplit(slide);                          // starts under cover, mid-flight as the curtain lifts
+  // exit upward, then reset silently to the bottom
+  curtain.classList.remove('cover');curtain.classList.add('exit');
+  await phaseDone(curtain,WIPE_MS);
+  curtain.classList.remove('move','exit');     // no transition → snaps back below
+  busy=false;
+}
+
+/* advance / retreat */
+function next(){
+  if(busy)return;
+  if(step<steps(s)){step++;apply();}
+  else if(s<slides.length-1)wipeTo(s+1);
+}
+function prev(){
+  if(busy)return;
+  if(step>0){step--;apply();}
+  else if(s>0)wipeTo(s-1,true);
+}
+
+/* input: keys, wheel (debounced), touch */
+addEventListener('keydown',e=>{
+  if(['ArrowRight',' ','PageDown'].includes(e.key)){e.preventDefault();next();}
+  if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();prev();}
+  if(e.key==='Home')wipeTo(0);
+  if(e.key==='End')wipeTo(slides.length-1);
+});
+let wheelLock=0;
+addEventListener('wheel',e=>{
+  const now=Date.now(); if(now-wheelLock<650||Math.abs(e.deltaY)<12)return;
+  wheelLock=now; e.deltaY>0?next():prev();
+},{passive:true});
+let ty=null;
+addEventListener('touchstart',e=>{ty=e.touches[0].clientY},{passive:true});
+addEventListener('touchend',e=>{
+  if(ty===null)return; const dy=e.changedTouches[0].clientY-ty; ty=null;
+  if(Math.abs(dy)>50) dy<0?next():prev();
+},{passive:true});
+document.getElementById('restart').addEventListener('click',()=>wipeTo(0));
+
+/* ============================================================
+   POINTER SUITE: one state, one rAF loop (from lesson 01).
+   ============================================================ */
+const mouse={x:innerWidth/2,y:innerHeight/2}, sm={...mouse}, rp={...mouse};
+addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;},{passive:true});
+const lerp=(a,b,n)=>a+(b-a)*n;
+const ring=document.getElementById('ring'),dot=document.getElementById('dot');
+document.querySelectorAll('button,.tilt,.pips button').forEach(el=>{
+  el.addEventListener('pointerenter',()=>ring.classList.add('hot'));
+  el.addEventListener('pointerleave',()=>ring.classList.remove('hot'));
+});
+addEventListener('pointerdown',()=>ring.classList.add('down'));
+addEventListener('pointerup',()=>ring.classList.remove('down'));
+const mags=[...document.querySelectorAll('.mag')];
+
+let rs=1;
+function frame(){
+  sm.x=lerp(sm.x,mouse.x,.15); sm.y=lerp(sm.y,mouse.y,.15);
+  rp.x=lerp(rp.x,mouse.x,.22); rp.y=lerp(rp.y,mouse.y,.22);
+  const target=ring.classList.contains('down')?.7:ring.classList.contains('hot')?1.7:1;
+  rs=lerp(rs,target,.2);
+  ring.style.transform=`translate(${rp.x}px,${rp.y}px) translate(-50%,-50%) scale(${rs})`;
+  dot.style.transform=`translate(${mouse.x}px,${mouse.y}px) translate(-50%,-50%)`;
+  // parallax only inside the ACTIVE slide (cheap: query once per frame on a small set)
+  const ox=(sm.x/innerWidth-.5), oy=(sm.y/innerHeight-.5);
+  slides[s].querySelectorAll('[data-par]').forEach(el=>{
+    const k=parseFloat(el.dataset.par);
+    el.style.transform=`translate(${ox*k*260}px,${oy*k*260}px)`;
+  });
+  mags.forEach(b=>{
+    const r=b.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2;
+    const dx=mouse.x-cx, dy=mouse.y-cy, dist=Math.hypot(dx,dy);
+    const cur=b._m||{x:0,y:0};
+    const tx=dist<110?dx*.3:0, ty2=dist<110?dy*.3:0;
+    cur.x=lerp(cur.x,tx,.2); cur.y=lerp(cur.y,ty2,.2); b._m=cur;
+    b.style.transform=`translate(${cur.x}px,${cur.y}px)`;
+  });
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* tilt cards */
+document.querySelectorAll('.tilt').forEach(card=>{
+  card.addEventListener('pointermove',e=>{
+    const r=card.getBoundingClientRect();
+    const px=(e.clientX-r.left)/r.width, py=(e.clientY-r.top)/r.height;
+    card.style.transform=`perspective(800px) rotateY(${(px-.5)*14}deg) rotateX(${(.5-py)*14}deg) translateY(-4px)`;
+    card.querySelector('.glare').style.setProperty('--gx',px*100+'%');
+    card.querySelector('.glare').style.setProperty('--gy',py*100+'%');
+  });
+  card.addEventListener('pointerleave',()=>{card.style.transform='';});
+});
+
+/* spotlight */
+const spot=document.getElementById('spot');
+spot.addEventListener('pointermove',e=>{
+  const r=spot.getBoundingClientRect();
+  const m=spot.querySelector('.masklayer');
+  m.style.setProperty('--mx',(e.clientX-r.left)+'px');
+  m.style.setProperty('--my',(e.clientY-r.top)+'px');
+});
+
+/* boot */
+slides[0].classList.add('active');
+apply();
+replaySplit(slides[0]);
+</script>
+</body>
+</html>
