@@ -59,21 +59,40 @@ If it returns 0 (Obsidian wiped it), restore via the quit→write→relaunch dan
 
 ## Color map (graph.json colorGroups → rgb)
 
-| Query | Color | rgb |
-|---|---|---|
-| `path:wiki/index.md` | red | 16733525 |
-| `path:wiki/overview.md` | teal | 1960374 |
-| `tag:#index` | blue-grey | 6451876 |
-| `path:wiki/synthesis/` | yellow | 15858316 |
-| `path:wiki/entities/` | purple | 12424185 |
-| `path:wiki/sources/` | grey-blue | 8099754 |
-| `tag:#domain-a` | green | 5307003 |
-| `tag:#domain-b` | pink | 16742854 |
-| `tag:#domain-c` | orange | 16758892 |
-| `tag:#domain-d` | cyan | 9169405 |
-| `tag:#meta` | lime | 11132022 |
+**This is an example, not your vault.** `domain-a`..`domain-d` stand in for whatever
+subjects you actually tag; swap them for your own. The `path:` rows assume the wiki
+layout this kit ships with. `rgb` is the decimal integer Obsidian stores — the hex is
+alongside it so you can tell at a glance that a number is the colour it claims to be.
+
+| Query | Color | rgb | hex |
+|---|---|---|---|
+| `path:wiki/index.md` | red | 16733525 | `#FF5555` |
+| `path:wiki/overview.md` | teal | 1960374 | `#1DE9B6` |
+| `tag:#index` | blue-grey | 6451876 | `#6272A4` |
+| `path:wiki/synthesis/` | yellow | 15858316 | `#F1FA8C` |
+| `path:wiki/entities/` | purple | 12424185 | `#BD93F9` |
+| `path:wiki/sources/` | grey-blue | 8099754 | `#7B97AA` |
+| `tag:#domain-a` | green | 5307003 | `#50FA7B` |
+| `tag:#domain-b` | pink | 16742854 | `#FF79C6` |
+| `tag:#domain-c` | orange | 16758892 | `#FFB86C` |
+| `tag:#domain-d` | cyan | 9169405 | `#8BE9FD` |
+| `tag:#meta` | lime | 11132022 | `#A9DC76` |
 
 Each entry in the JSON array is: `{ "query": "<query>", "color": { "a": 1, "rgb": <rgb> } }`
+
+**A table like this rots silently.** In the vault this skill was written for, it sat at
+11 of 22 groups long enough for a whole new section of the vault to appear without the
+skill ever mentioning it — and nothing complains, because a stale table is still a valid
+table. Dump the live truth instead of trusting it:
+
+```powershell
+$g = Get-Content '<VAULT_ROOT>\.obsidian\graph.json' -Raw | ConvertFrom-Json
+$g.colorGroups | ForEach-Object { $n=[int]$_.color.rgb
+  "{0,-32} {1,9}  #{2}" -f $_.query, $n, $n.ToString('X6') }
+```
+
+If that count disagrees with your table, the vault is right — update the table, don't
+edit graph.json to match it.
 
 ## Related
 - Slash command `/vault-colors` runs this same procedure on demand.
