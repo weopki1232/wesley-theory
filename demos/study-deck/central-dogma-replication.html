@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Central Dogma · Act I — DNA Replication</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+/* =====================================================================
+   THE CENTRAL DOGMA — Act I: DNA Replication
+   Cinematic liquid-glass study deck.
+   Fusion of: study-deck conventions (Fraunces/Hanken, blue/red strands,
+   per-enzyme colours + legend, stepped reveals, scale-based zoom) +
+   the cinematic-glass skin (aurora bg, glass panels, motion-on-entrance).
+   ===================================================================== */
+:root{
+  /* surfaces */
+  --canvas:#05060c; --ink:#eef2f7; --ink-soft:#aab3c2; --ink-dim:#6b7588;
+  --hair:#1d2230; --hair-2:#2c3346;
+  /* molecule colour code */
+  --dna:#2dd4bf;        /* DNA teal   */
+  --rna:#f5b13d;        /* RNA amber  */
+  --protein:#fb7da0;    /* protein rose */
+  /* strands — MUST differ (study-deck rule) */
+  --template:#4a90e2;   /* template strand = blue */
+  --partner:#e2574a;    /* partner / new = red    */
+  /* enzymes — each its own colour + legend */
+  --topo:#ffd23d;       /* topoisomerase yellow */
+  --helicase:#ff8a3d;   /* helicase orange      */
+  --ssb:#5aa9ff;        /* SSB blue             */
+  --primase:#b98bff;    /* primase purple       */
+  --pol3:#c2476a;       /* Pol III maroon       */
+  --pol1:#28d3ee;       /* Pol I cyan           */
+  --ligase:#3ddc84;     /* ligase green         */
+  /* type */
+  --display:'Fraunces',Georgia,serif;
+  --body:'Hanken Grotesk',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--canvas);color:var(--ink);font-family:var(--body)}
+body{-webkit-font-smoothing:antialiased}
+
+/* ---------- cinematic aurora background ---------- */
+.aurora{position:fixed;inset:0;z-index:0;overflow:hidden;background:
+   radial-gradient(60% 80% at 50% 120%, #0a1422 0%, transparent 70%), var(--canvas);}
+.aurora::before,.aurora::after{content:"";position:absolute;border-radius:50%;
+   filter:blur(100px);opacity:.4;mix-blend-mode:screen;animation:drift 30s var(--ease) infinite alternate}
+.aurora::before{width:55vw;height:55vw;left:-8vw;top:-12vw;
+   background:radial-gradient(circle at 30% 30%,var(--dna),transparent 60%)}
+.aurora::after{width:55vw;height:55vw;right:-10vw;bottom:-16vw;
+   background:radial-gradient(circle at 70% 70%,#7a3df0,transparent 62%);animation-duration:38s}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(5vw,4vh) scale(1.15)}}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.035;
+   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ---------- deck / slide stage ---------- */
+.deck{position:fixed;inset:0;z-index:2}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;
+   align-items:center;justify-content:center;padding:5vh 6vw;
+   opacity:0;visibility:hidden;transform:scale(.82);
+   transition:transform .9s var(--ease),opacity .8s var(--ease),visibility 0s linear .9s}
+.slide.active{opacity:1;visibility:visible;transform:scale(1);transition-delay:0s,0s,0s}
+.slide.past{opacity:0;transform:scale(1.22)}      /* zoom THROUGH (forward) */
+.slide.recede{opacity:0;transform:scale(.7)}      /* camera pulls BACK     */
+.slide.ahead{opacity:0;transform:scale(.82)}
+
+.stage{width:100%;max-width:1100px;display:flex;flex-direction:column;align-items:center;gap:var(--g,18px)}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:3px;text-transform:uppercase;
+   color:var(--dna);opacity:.85}
+h1{font-family:var(--display);font-weight:600;line-height:1.02;letter-spacing:-1.5px;
+   font-size:clamp(38px,7.5vw,86px);text-align:center}
+h2{font-family:var(--display);font-weight:600;letter-spacing:-.5px;
+   font-size:clamp(26px,4vw,42px);text-align:center;line-height:1.1}
+.sub{color:var(--ink-soft);font-size:clamp(15px,1.8vw,19px);text-align:center;max-width:60ch;line-height:1.5}
+
+/* ---------- liquid glass ---------- */
+.glass{position:relative;background:rgba(18,22,34,.5);border:1px solid var(--hair);
+   border-radius:16px;backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);
+   padding:18px 20px;overflow:hidden}
+.glass::before{content:"";position:absolute;inset:0 0 auto 0;height:1px;
+   background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent)}
+
+/* ---------- stepped reveals (motion-on-entrance) ---------- */
+.fade{opacity:0;transform:translateY(14px);filter:blur(6px);
+   transition:opacity .7s var(--ease),transform .7s var(--ease),filter .7s var(--ease)}
+.fade.show{opacity:1;transform:none;filter:none}
+[data-from]{opacity:0;transition:opacity .6s var(--ease),transform .6s var(--ease)}
+[data-from].show{opacity:1}
+
+/* ---------- caption bar ---------- */
+.caption{position:fixed;left:0;right:0;bottom:5.2vh;z-index:5;display:flex;justify-content:center;pointer-events:none}
+.capwrap{position:relative;min-height:58px;width:min(760px,86vw)}
+.capstep{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:10px;
+   text-align:center;opacity:0;transform:translateY(10px);transition:.5s var(--ease);
+   font-size:clamp(14px,1.7vw,18px);color:var(--ink);line-height:1.4}
+.capstep.on{opacity:1;transform:none}
+.capstep b{color:var(--dna)}
+
+/* progress pips */
+.pips{position:fixed;bottom:2.4vh;left:0;right:0;z-index:5;display:flex;gap:7px;justify-content:center}
+.pip{width:7px;height:7px;border-radius:50%;background:var(--hair-2);transition:.3s var(--ease)}
+.pip.on{background:var(--dna);transform:scale(1.35);box-shadow:0 0 10px var(--dna)}
+
+/* slide counter + hint */
+.hud{position:fixed;top:3vh;right:3vw;z-index:5;font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
+.hint{position:fixed;bottom:2.2vh;right:3vw;z-index:5;font-family:var(--mono);font-size:11px;color:var(--ink-dim)}
+.kbd{border:1px solid var(--hair-2);border-radius:4px;padding:1px 5px}
+
+/* ---------- legend chips ---------- */
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;width:100%}
+.chip{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.dot{width:16px;height:16px;border-radius:50%;flex:none;box-shadow:0 0 12px currentColor}
+.chip .nm{font-weight:600;font-size:15px}
+.chip .jb{color:var(--ink-soft);font-size:12.5px;line-height:1.35}
+
+/* stat numbers */
+.stat{font-family:var(--mono);font-weight:500}
+.big{font-family:var(--display);font-weight:700;letter-spacing:-1px}
+
+/* flow dots (title + finale) */
+.flow{display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:14px;color:var(--ink-soft)}
+.flow .node{display:flex;align-items:center;gap:8px}
+.flow .ball{width:13px;height:13px;border-radius:50%;box-shadow:0 0 14px currentColor}
+.arrow{color:var(--ink-dim)}
+
+svg{width:100%;height:auto;display:block;overflow:visible}
+.lbl{font-family:var(--mono);font-size:11px;fill:var(--ink-soft)}
+.lbl-s{font-family:var(--mono);font-size:9.5px;fill:var(--ink-dim)}
+.tag{font-family:var(--body);font-size:12px;font-weight:600}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important}
+  .slide,.fade,.capstep,[data-from]{transition:opacity .25s linear!important}
+}
+</style>
+</head>
+<body>
+<div class="aurora"></div>
+<div class="grain"></div>
+
+<div class="hud" id="hud">01 / 09</div>
+
+<div class="deck" id="deck">
+
+  <!-- ============ 1 · TITLE ============ -->
+  <section class="slide" data-steps="2">
+    <div class="stage" style="--g:26px">
+      <div class="eyebrow fade" data-from="0">Molecular Genetics · Act I</div>
+      <h1 class="fade" data-from="0">The Central Dogma</h1>
+      <p class="sub fade" data-from="1">How a cell copies its genome with near-perfect fidelity — the machinery of <b style="color:var(--dna)">DNA replication</b>, built one enzyme at a time.</p>
+      <div class="flow fade" data-from="2" style="margin-top:6px">
+        <span class="node"><span class="ball" style="background:var(--dna);color:var(--dna)"></span>DNA</span>
+        <span class="arrow">→</span>
+        <span class="node"><span class="ball" style="background:var(--rna);color:var(--rna)"></span>RNA</span>
+        <span class="arrow">→</span>
+        <span class="node"><span class="ball" style="background:var(--protein);color:var(--protein)"></span>Protein</span>
+      </div>
+    </div>
+    <div class="caption"><div class="capwrap">
+      <p class="capstep on">A genome is information. To divide, a cell must copy <b>3 billion letters</b> — and barely miss.</p>
+      <p class="capstep">Replication is the first arrow of the dogma: <b>DNA → DNA</b>.</p>
+      <p class="capstep">We'll meet every player, then watch them work at the fork.</p>
+    </div></div>
+  </section>
+
+  <!-- ============ 2 · B-DNA STRUCTURE ============ -->
+  <section class="slide" data-steps="4">
+    <div class="stage">
+      <div class="eyebrow">Meet the molecule</div>
+      <h2>B-form DNA — an antiparallel ladder</h2>
+      <svg viewBox="0 0 900 300" role="img" aria-label="DNA double helix ladder">
+        <!-- backbones -->
+        <g data-from="0">
+          <line x1="60" y1="90" x2="840" y2="90" stroke="var(--template)" stroke-width="7" stroke-linecap="round"/>
+          <line x1="60" y1="210" x2="840" y2="210" stroke="var(--partner)" stroke-width="7" stroke-linecap="round"/>
+          <text x="44" y="84" class="lbl" text-anchor="end" fill="var(--template)">5′</text>
+          <text x="856" y="84" class="lbl" text-anchor="start" fill="var(--template)">3′</text>
+          <text x="44" y="226" class="lbl" text-anchor="end" fill="var(--partner)">3′</text>
+          <text x="856" y="226" class="lbl" text-anchor="start" fill="var(--partner)">5′</text>
+          <text x="450" y="36" class="tag" text-anchor="middle" fill="var(--template)">template strand</text>
+          <text x="450" y="270" class="tag" text-anchor="middle" fill="var(--partner)">partner strand</text>
+        </g>
+        <!-- rungs / base pairs -->
+        <g data-from="1" id="rungs"></g>
+        <!-- A:T highlight -->
+        <g data-from="2" id="atpair">
+          <rect x="190" y="78" width="64" height="144" rx="8" fill="none" stroke="var(--rna)" stroke-width="2" stroke-dasharray="4 4"/>
+          <text x="222" y="150" class="tag" text-anchor="middle" fill="var(--rna)">A : T</text>
+          <text x="222" y="168" class="lbl-s" text-anchor="middle">2 H-bonds</text>
+        </g>
+        <!-- G:C highlight -->
+        <g data-from="3" id="gcpair">
+          <rect x="560" y="78" width="64" height="144" rx="8" fill="none" stroke="var(--dna)" stroke-width="2" stroke-dasharray="4 4"/>
+          <text x="592" y="150" class="tag" text-anchor="middle" fill="var(--dna)">G ≡ C</text>
+          <text x="592" y="168" class="lbl-s" text-anchor="middle">3 H-bonds</text>
+        </g>
+      </svg>
+      <div class="glass fade" data-from="4" style="display:flex;gap:26px;flex-wrap:wrap;justify-content:center">
+        <span class="stat">10.4 bp / turn</span>
+        <span class="stat">rise 3.4 Å / bp</span>
+        <span class="stat">Ø 20 Å · right-handed</span>
+      </div>
+    </div>
+    <div class="caption"><div class="capwrap">
+      <p class="capstep on">Two backbones run <b>antiparallel</b> — one 5′→3′, its partner 3′→5′.</p>
+      <p class="capstep">The rungs are <b>base pairs</b>: each base reads its complement across the helix.</p>
+      <p class="capstep"><b style="color:var(--rna)">A:T</b> is held by 2 hydrogen bonds — weaker, easier to melt.</p>
+      <p class="capstep"><b style="color:var(--dna)">G:C</b> is held by 3 hydrogen bonds — stronger, higher melting temperature.</p>
+      <p class="capstep">Geometry is fixed: ~10.4 bp per helical turn, 3.4 Å rise per base.</p>
+    </div></div>
+  </section>
+
+  <!-- ============ 3 · THE CAST (enzyme legend) ============ -->
+  <section class="slide" data-steps="7">
+    <div class="stage">
+      <div class="eyebrow">The cast · label before use</div>
+      <h2>The replisome — seven players</h2>
+      <div class="legend">
+        <div class="glass chip" data-from="1"><span class="dot" style="background:var(--topo);color:var(--topo)"></span><div><div class="nm" style="color:var(--topo)">Topoisomerase II</div><div class="jb">Relieves supercoils ahead of the fork (ATP)</div></div></div>
+        <div class="glass chip" data-from="2"><span class="dot" style="background:var(--helicase);color:var(--helicase)"></span><div><div class="nm" style="color:var(--helicase)">Helicase (DnaB)</div><div class="jb">Unwinds the duplex at the fork</div></div></div>
+        <div class="glass chip" data-from="3"><span class="dot" style="background:var(--ssb);color:var(--ssb)"></span><div><div class="nm" style="color:var(--ssb)">SSB proteins</div><div class="jb">Coat &amp; stabilise single-stranded DNA</div></div></div>
+        <div class="glass chip" data-from="4"><span class="dot" style="background:var(--primase);color:var(--primase)"></span><div><div class="nm" style="color:var(--primase)">Primase (DnaG)</div><div class="jb">Lays the short RNA primer to start</div></div></div>
+        <div class="glass chip" data-from="5"><span class="dot" style="background:var(--pol3);color:var(--pol3)"></span><div><div class="nm" style="color:var(--pol3)">DNA Pol III</div><div class="jb">Main builder · 5′→3′ · ~1000 nt/s · proofreads</div></div></div>
+        <div class="glass chip" data-from="6"><span class="dot" style="background:var(--pol1);color:var(--pol1)"></span><div><div class="nm" style="color:var(--pol1)">DNA Pol I</div><div class="jb">Removes RNA primers, fills the gaps with DNA</div></div></div>
+        <div class="glass chip" data-from="7"><span class="dot" style="background:var(--ligase);color:var(--ligase)"></span><div><div class="nm" style="color:var(--ligase)">DNA Ligase</div><div class="jb">Seals the nicks into one continuous strand</div></div></div>
+      </div>
+    </div>
+    <div class="caption"><div class="capwrap">
+      <p class="capstep on">Before the machine runs, meet each part — every enzyme keeps its own colour.</p>
+      <p class="capstep"><b style="color:var(--topo)">Topoisomerase</b> untangles the torsional stress racing ahead of the fork.</p>
+      <p class="capstep"><b style="color:var(--helicase)">Helicase</b> is the zipper — it splits the two strands apart.</p>
+      <p class="capstep"><b style="color:var(--ssb)">SSB</b> props the bare strands open so they can't snap back.</p>
+      <p class="capstep"><b style="color:var(--primase)">Primase</b> writes a tiny RNA "starter" — polymerase can't begin from nothing.</p>
+      <p class="capstep"><b style="color:var(--pol3)">Pol III</b> does the real building, and checks its own work.</p>
+      <p class="capstep"><b style="color:var(--pol1)">Pol I</b> erases the RNA starters; <b style="color:var(--ligase)">ligase</b> stitches the seams.</p>
+    </div></div>
+  </section>
+
+  <!-- ============ 4 · UNWINDING THE FORK ============ -->
+  <section class="slide" data-steps="3">
+    <div class="stage">
+      <div class="eyebrow">Step 1 · open the helix</div>
+      <h2>Unwinding at the replication fork</h2>
+      <svg viewBox="0 0 900 340" role="img" aria-label="Replication fork opening">
+        <!-- closed duplex (right side) -->
+        <line x1="470" y1="170" x2="860" y2="170" stroke="var(--template)" stroke-width="6" stroke-linecap="round"/>
+        <line x1="470" y1="184" x2="860" y2="184" stroke="var(--partner)" stroke-width="6" stroke-linecap="round"/>
+        <!-- split strands (left) -->
+        <path d="M470 170 Q 300 150 60 70" fill="none" stroke="var(--template)" stroke-width="6" stroke-linecap="round"/>
+        <path d="M470 184 Q 300 204 60 286" fill="none" stroke="var(--partner)" stroke-width="6" stroke-linecap="round"/>
+        <text x="44" y="64" class="lbl" text-anchor="end" fill="var(--template)">3′ template</text>
+        <text x="44" y="298" class="lbl" text-anchor="end" fill="var(--partner)">5′ template</text>
+        <!-- topoisomerase ahead -->
+        <g data-from="1">
+          <circle cx="800" cy="177" r="22" fill="var(--topo)" opacity=".9"/>
+          <text x="800" y="135" class="tag" text-anchor="middle" fill="var(--topo)">topoisomerase</text>
+          <text x="800" y="120" class="lbl-s" text-anchor="middle">relaxes supercoils</text>
+        </g>
+        <!-- helicase at junction -->
+        <g data-from="2">
+          <polygon points="470,150 510,177 470,204 450,177" fill="var(--helicase)"/>
+          <text x="470" y="240" class="tag" text-anchor="middle" fill="var(--helicase)">helicase</text>
+          <text x="470" y="255" class="lbl-s" text-anchor="middle">splits the duplex →</text>
+        </g>
+        <!-- SSB beads -->
+        <g data-from="3">
+          <circle cx="330" cy="138" r="9" fill="var(--ssb)"/><circle cx="250" cy="118" r="9" fill="var(--ssb)"/><circle cx="170" cy="98" r="9" fill="var(--ssb)"/>
+          <circle cx="330" cy="216" r="9" fill="var(--ssb)"/><circle cx="250" cy="236" r="9" fill="var(--ssb)"/><circle cx="170" cy="256" r="9" fill="var(--ssb)"/>
+          <text x="220" y="40" class="tag" text-anchor="middle" fill="var(--ssb)">SSB coats the open strands</text>
+        </g>
+      </svg>
+    </div>
+    <div class="caption"><div class="capwrap">
+      <p class="capstep on">The fork is a Y: ahead lies closed duplex, behind it two open strands.</p>
+      <p class="capstep"><b style="color:var(--topo)">Topoisomerase</b> runs ahead, releasing the twist that builds up as the fork moves.</p>
+      <p class="capstep"><b style="color:var(--helicase)">Helicase</b> sits at the junction and pries the two strands apart.</p>
+      <p class="capstep"><b style="color:var(--ssb)">SSB</b> beads cling to the bare strands so they stay open and unkinked.</p>
+    </div></div>
+  </section>
+
+  <!-- ============ 5 · PRIMING ============ -->
+  <section class="slide" data-steps="2">
+    <div class="stage">
+      <div class="eyebrow">Step 2 · lay the starter</div>
+      <h2>Primase writes an RNA primer</h2>
+      <svg viewBox="0 0 900 240" role="img" aria-label="Primase laying RNA primer">
+        <line x1="60" y1="150" x2="840" y2="150" stroke="var(--template)" stroke-width="6" stroke-linecap="round"/>
+        <text x="44" y="144" class="lbl" text-anchor="end" fill="var(--template)">3′</text>
+        <text x="856" y="144" class="lbl" text-anchor="start" fill="var(--template)">5′ template</text>
+        <!-- primase -->
+        <g data-from="1">
+          <circle cx="300" cy="120" r="24" fill="var(--primase)"/>
+          <text x="300" y="80" class="tag" text-anchor="middle" fill="var(--primase)">primase (DnaG)</text>
+        </g>
+        <!-- RNA primer (amber) -->
+        <g data-from="2">
+          <line x1="250" y1="135" x2="360" y2="135" stroke="var(--rna)" stroke-width="6" stroke-linecap="round"/>
+          <text x="305" y="125" class="tag" text-anchor="middle" fill="var(--rna)">RNA primer</text>
+          <text x="305" y="172" class="lbl-s" text-anchor="middle">8–12 nt · provides a free 3′-OH</text>
+        </g>
+      </svg>
+    </div>
+    <div class="caption"><div class="capwrap">
+      <p class="capstep on">DNA polymerase has one weakness: it can <b>extend</b>, but it cannot <b>start</b>.</p>
+      <p class="capstep"><b style="color:var(--primase)">Primase</b> lays a short <b style="color:var(--rna)">RNA primer</b> — a 3′-OH handle the builder can grab.</p>
+    </div></div>
+  </section>
+
+  <!-- ============ 6 · LEADING vs LAGGING ============ -->
+  <section class="slide" data-steps="3">
+    <div class="stage">
+      <div class="eyebrow">Step 3 · build · the two strands diverge</div>
+      <h2>Leading is smooth — lagging is in pieces</h2>
+      <svg viewBox="0 0 900 380" role="img" aria-label="Leading and lagging strand synthesis">
+        <!-- fork -->
+        <path d="M470 190 Q 300 170 60 96" fill="none" stroke="var(--template)" stroke-width="6" stroke-linecap="round"/>
+        <path d="M470 204 Q 300 224 60 308" fill="none" stroke="var(--partner)" stroke-width="6" stroke-linecap="round"/>
+        <line x1="470" y1="190" x2="860" y2="190" stroke="var(--template)" stroke-width="6" stroke-linecap="round"/>
+        <line x1="470" y1="204" x2="860" y2="204" stroke="var(--partner)" stroke-width="6" stroke-linecap="round"/>
+        <polygon points="470,170 506,197 470,224 452,197" fill="var(--helicase)" opacity=".85"/>
+        <!-- leading: continuous new strand -->
+        <g data-from="1">
+          <line x1="120" y1="110" x2="430" y2="183" stroke="var(--rna)" stroke-width="5" stroke-linecap="round" opacity=".5"/>
+          <line x1="150" y1="116" x2="430" y2="183" stroke="var(--dna)" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="160" cy="120" r="18" fill="var(--pol3)"/>
+          <text x="250" y="78" class="tag" text-anchor="middle" fill="var(--dna)">leading strand — continuous →</text>
+          <text x="250" y="62" class="lbl-s" text-anchor="middle">Pol III follows the fork in one smooth run</text>
+        </g>
+        <!-- lagging: Okazaki fragments -->
+        <g data-from="2">
+          <line x1="120" y1="300" x2="190" y2="288" stroke="var(--rna)" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+          <line x1="190" y1="288" x2="300" y2="270" stroke="var(--dna)" stroke-width="6" stroke-linecap="round"/>
+          <line x1="300" y1="270" x2="350" y2="262" stroke="var(--rna)" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+          <line x1="350" y1="262" x2="440" y2="248" stroke="var(--dna)" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="250" cy="278" r="16" fill="var(--pol3)"/>
+          <text x="280" y="340" class="tag" text-anchor="middle" fill="var(--partner)">lagging strand — Okazaki fragments</text>
+          <text x="280" y="356" class="lbl-s" text-anchor="middle">← built backwards in 1–2 kb chunks (each needs its own primer)</text>
+        </g>
+        <!-- trombone -->
+        <g data-from="3">
+          <path d="M250 278 Q 360 360 470 204" fill="none" stroke="var(--partner)" stroke-width="2.5" stroke-dasharray="5 5" opacity=".8"/>
+          <text x="640" y="150" class="tag" text-anchor="middle" fill="var(--ink-soft)">trombone model</text>
+          <text x="640" y="166" class="lbl-s" text-anchor="middle">lagging template loops so both</text>
+          <text x="640" y="178" class="lbl-s" text-anchor="middle">polymerases travel together</text>
+        </g>
+      </svg>
+    </div>
+    <div class="caption"><div class="capwrap">
+      <p class="capstep on">Both new strands grow only <b>5′→3′</b> — but the fork opens in one direction.</p>
+      <p class="capstep"><b style="color:var(--dna)">Leading strand:</b> Pol III chases the fork in one continuous sweep.</p>
+      <p class="capstep"><b style="color:var(--partner)">Lagging strand:</b> built backwards in <b>Okazaki fragments</b>, each re-primed.</p>
+      <p class="capstep">The <b>trombone loop</b> lets both polymerases move as one unit.</p>
+    </div></div>
+  </section>
+
+  <!-- ============ 7 · FINISHING ============ -->
+  <section class="slide" data-steps="2">
+    <div class="stage">
+      <div class="eyebrow">Step 4 · close the seams</div>
+      <h2>Pol I erases the primers, ligase seals</h2>
+      <svg viewBox="0 0 900 240" role="img" aria-label="Primer removal and ligation">
+        <line x1="60" y1="150" x2="840" y2="150" stroke="var(--template)" stroke-width="6" stroke-linecap="round"/>
+        <!-- fragments with RNA primers between -->
+        <g id="frag0">
+          <line x1="90" y1="134" x2="250" y2="134" stroke="var(--dna)" stroke-width="6" stroke-linecap="round"/>
+          <line x1="250" y1="134" x2="320" y2="134" stroke="var(--rna)" stroke-width="6" stroke-linecap="round" class="prim"/>
+          <line x1="320" y1="134" x2="500" y2="134" stroke="var(--dna)" stroke-width="6" stroke-linecap="round"/>
+          <line x1="500" y1="134" x2="560" y2="134" stroke="var(--rna)" stroke-width="6" stroke-linecap="round" class="prim"/>
+          <line x1="560" y1="134" x2="800" y2="134" stroke="var(--dna)" stroke-width="6" stroke-linecap="round"/>
+        </g>
+        <!-- Pol I converting primers -->
+        <g data-from="1">
+          <circle cx="285" cy="108" r="16" fill="var(--pol1)"/><circle cx="530" cy="108" r="16" fill="var(--pol1)"/>
+          <text x="408" y="80" class="tag" text-anchor="middle" fill="var(--pol1)">Pol I removes RNA → fills with DNA</text>
+        </g>
+        <!-- ligase sealing nicks -->
+        <g data-from="2">
+          <circle cx="250" cy="186" r="13" fill="var(--ligase)"/><circle cx="500" cy="186" r="13" fill="var(--ligase)"/><circle cx="320" cy="186" r="13" fill="var(--ligase)"/><circle cx="560" cy="186" r="13" fill="var(--ligase)"/>
+          <text x="408" y="222" class="tag" text-anchor="middle" fill="var(--ligase)">ligase seals every nick → one continuous strand</text>
+        </g>
+      </svg>
+    </div>
+    <div class="caption"><div class="capwrap">
+      <p class="capstep on">Each fragment still begins with an <b style="color:var(--rna)">RNA primer</b> — that has to go.</p>
+      <p class="capstep"><b style="color:var(--pol1)">Pol I</b> chews out the RNA and back-fills DNA; <b style="color:var(--ligase)">ligase</b> seals the nicks.</p>
+    </div></div>
+  </section>
+
+  <!-- ============ 8 · FIDELITY ============ -->
+  <section class="slide" data-steps="3">
+    <div class="stage" style="--g:24px">
+      <div class="eyebrow">Why it barely ever fails</div>
+      <h2>Three multiplicative layers of fidelity</h2>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;align-items:stretch">
+        <div class="glass fade" data-from="1" style="text-align:center;min-width:200px">
+          <div class="lbl" style="color:var(--pol3)">1 · base selection</div>
+          <div class="big" style="font-size:34px;margin:8px 0">10⁻⁵</div>
+          <div class="jb" style="color:var(--ink-soft);font-size:13px">polymerase picks the right base</div>
+        </div>
+        <div class="glass fade" data-from="2" style="text-align:center;min-width:200px">
+          <div class="lbl" style="color:var(--pol1)">2 · 3′→5′ proofreading</div>
+          <div class="big" style="font-size:34px;margin:8px 0">10⁻⁷</div>
+          <div class="jb" style="color:var(--ink-soft);font-size:13px">exonuclease backs up &amp; corrects</div>
+        </div>
+        <div class="glass fade" data-from="3" style="text-align:center;min-width:200px">
+          <div class="lbl" style="color:var(--ligase)">3 · mismatch repair</div>
+          <div class="big" style="font-size:34px;margin:8px 0">10⁻¹⁰</div>
+          <div class="jb" style="color:var(--ink-soft);font-size:13px">MMR sweeps the survivors</div>
+        </div>
+      </div>
+    </div>
+    <div class="caption"><div class="capwrap">
+      <p class="capstep on">A genome can't tolerate many errors — so accuracy is built in layers.</p>
+      <p class="capstep">Selectivity alone gives ~1 error in 100,000. Good, not enough.</p>
+      <p class="capstep">Proofreading multiplies it to ~10⁻⁷ — the polymerase corrects itself live.</p>
+      <p class="capstep">Mismatch repair finishes the job: <b>~1 error in 10 billion bases.</b></p>
+    </div></div>
+  </section>
+
+  <!-- ============ 9 · ZOOM-OUT → ACT II ============ -->
+  <section class="slide" data-steps="2" data-zoomout>
+    <div class="stage" style="--g:26px">
+      <div class="eyebrow fade" data-from="0">End of Act I</div>
+      <h1 class="fade" data-from="0" style="font-size:clamp(32px,6vw,68px)">One strand becomes two.</h1>
+      <div class="flow fade" data-from="1" style="margin-top:4px">
+        <span class="node"><span class="ball" style="background:var(--dna);color:var(--dna)"></span>DNA</span>
+        <span class="arrow">→</span>
+        <span class="node"><span class="ball" style="background:var(--rna);color:var(--rna)"></span>RNA</span>
+        <span class="arrow">→</span>
+        <span class="node"><span class="ball" style="background:var(--protein);color:var(--protein)"></span>Protein</span>
+      </div>
+      <p class="sub fade" data-from="2">Replication copies the message. <b style="color:var(--rna)">Act II — Transcription &amp; Translation</b> reads it out into protein.</p>
+    </div>
+    <div class="caption"><div class="capwrap">
+      <p class="capstep on">Pull back: the fork you just watched runs millions of times across the genome.</p>
+      <p class="capstep">The copy is made. Next, the cell <b>reads</b> it.</p>
+      <p class="capstep">Coming in Act II — <b style="color:var(--rna)">transcription</b> and <b style="color:var(--protein)">translation</b>.</p>
+    </div></div>
+  </section>
+
+</div><!-- /deck -->
+
+<div class="caption" id="capHost" style="display:none"></div>
+<div class="pips" id="pips"></div>
+<div class="hint">step <span class="kbd">→</span> / <span class="kbd">Space</span> · back <span class="kbd">←</span></div>
+
+<script>
+(function(){
+  const slides=[...document.querySelectorAll('.slide')];
+  const pipsHost=document.getElementById('pips');
+  const hud=document.getElementById('hud');
+  let cur=0, step=0, lock=false;
+
+  // build pips
+  slides.forEach(()=>{const d=document.createElement('div');d.className='pip';pipsHost.appendChild(d);});
+  const pips=[...pipsHost.children];
+
+  function maxStep(s){return +s.dataset.steps||0;}
+
+  function render(){
+    slides.forEach((s,i)=>{
+      s.classList.remove('active','past','ahead','recede');
+      if(i===cur) s.classList.add('active');
+      else if(i<cur){
+        if(slides[cur].hasAttribute('data-zoomout') && i===cur-1) s.classList.add('recede');
+        else s.classList.add('past');
+      } else s.classList.add('ahead');
+    });
+    const a=slides[cur];
+    // reveals
+    a.querySelectorAll('[data-from]').forEach(el=>{
+      el.classList.toggle('show', step>=+el.dataset.from);
+    });
+    // captions
+    const caps=a.querySelectorAll('.capstep');
+    caps.forEach((c,idx)=>c.classList.toggle('on', idx===step));
+    // pips
+    pips.forEach((p,i)=>p.classList.toggle('on', i===cur));
+    hud.textContent=String(cur+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
+  }
+
+  function next(){
+    if(step<maxStep(slides[cur])){ step++; render(); return; }
+    if(cur<slides.length-1){ cur++; step=0; render(); }
+  }
+  function prev(){
+    if(step>0){ step--; render(); return; }
+    if(cur>0){ cur--; step=maxStep(slides[cur]); render(); }
+  }
+
+  // keys
+  addEventListener('keydown',e=>{
+    if(['ArrowRight',' ','PageDown'].includes(e.key)){e.preventDefault();next();}
+    else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();prev();}
+    else if(e.key==='Home'){cur=0;step=0;render();}
+    else if(e.key==='End'){cur=slides.length-1;step=maxStep(slides[cur]);render();}
+  });
+  // wheel (debounced)
+  let wlock=false;
+  addEventListener('wheel',e=>{
+    if(wlock) return; if(Math.abs(e.deltaY)<12) return;
+    wlock=true; (e.deltaY>0?next():prev());
+    setTimeout(()=>wlock=false,420);
+  },{passive:true});
+  // touch
+  let ty=null;
+  addEventListener('touchstart',e=>ty=e.touches[0].clientY,{passive:true});
+  addEventListener('touchend',e=>{
+    if(ty===null)return; const dy=ty-e.changedTouches[0].clientY;
+    if(Math.abs(dy)>40)(dy>0?next():prev()); ty=null;
+  },{passive:true});
+  // click advances
+  addEventListener('click',()=>next());
+
+  // build the DNA rungs for slide 2 (procedural — keeps markup lean)
+  (function buildRungs(){
+    const g=document.getElementById('rungs'); if(!g)return;
+    const pairs=[['A','T',2],['G','C',3],['T','A',2],['C','G',3],['A','T',2],['G','C',3],['T','A',2],['C','G',3]];
+    const x0=110, dx=84;
+    pairs.forEach((p,i)=>{
+      const x=x0+i*dx;
+      const bonds=p[2];
+      // rung
+      const ns='http://www.w3.org/2000/svg';
+      for(let b=0;b<bonds;b++){
+        const off=(b-(bonds-1)/2)*5;
+        const l=document.createElementNS(ns,'line');
+        l.setAttribute('x1',x+off);l.setAttribute('y1',96);
+        l.setAttribute('x2',x+off);l.setAttribute('y2',204);
+        l.setAttribute('stroke', bonds===3?'var(--dna)':'var(--rna)');
+        l.setAttribute('stroke-width','2');l.setAttribute('opacity','.55');
+        g.appendChild(l);
+      }
+      const t1=document.createElementNS(ns,'text');
+      t1.setAttribute('x',x);t1.setAttribute('y',82);t1.setAttribute('text-anchor','middle');
+      t1.setAttribute('class','lbl-s');t1.setAttribute('fill','var(--template)');t1.textContent=p[0];
+      g.appendChild(t1);
+      const t2=document.createElementNS(ns,'text');
+      t2.setAttribute('x',x);t2.setAttribute('y',226);t2.setAttribute('text-anchor','middle');
+      t2.setAttribute('class','lbl-s');t2.setAttribute('fill','var(--partner)');t2.textContent=p[1];
+      g.appendChild(t2);
+    });
+  })();
+
+  render();
+})();
+</script>
+</body>
+</html>

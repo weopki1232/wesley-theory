@@ -1,5 +1,12 @@
 # Package improvements — paste this to Claude
 
+> ## ⚠️ SUPERSEDED — read `AUDIT-RESOLUTION.md` first
+>
+> Kept as a record. F1, G1, G3, H1 and I1 below have been applied or resolved; **G2 was
+> rejected** (it contradicts G1), and **H1's supporting evidence was wrong** —
+> `frontend-slides` does carry font/language guidance, ~790 matches' worth. F1 is real
+> and still open.
+
 Continuation of `PACKAGE-GAPS.md`. That file covers things that are **broken or missing**.
 This one covers things that are **worth adding** — each with the reason it's worth it, so you
 can reject any of them on the merits rather than doing them because a list said so.

@@ -48,7 +48,7 @@ $costPart = Fg $cCost ('${0:N2}' -f [double]$cost)
 
 # ---- planned-work estimate (written by Claude after planning) ----
 $root = $PSScriptRoot
-if (-not $root) { $root = 'C:\Users\WIN11\.claude' }
+if (-not $root) { $root = Join-Path $env:USERPROFILE '.claude' }
 $ep = Join-Path $root 'estimate.json'
 if (Test-Path $ep) {
     try { $est = (Get-Content $ep -Raw) | ConvertFrom-Json } catch { $est = $null }

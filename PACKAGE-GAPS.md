@@ -1,5 +1,18 @@
 # Package gaps — paste this to Claude
 
+> ## ⚠️ SUPERSEDED — read `AUDIT-RESOLUTION.md` first
+>
+> This is the original 2026-08-10 audit, kept as a record. Most of it has since been
+> **applied**; some of it was **checked and found wrong**.
+>
+> **Item D1 is refuted and must not be followed.** It tells you to delete
+> `skills/frontend-slides/plugins/`. That directory is what
+> `skills/frontend-slides/.claude-plugin/marketplace.json:13` points at, and it holds a
+> `plugin.json` that exists nowhere else. Deleting it breaks the package.
+>
+> File paths quoted below are the pre-templatization ones; the package now uses
+> `<PLACEHOLDER>` markers instead.
+
 Findings from a full scan of this package (all 385 files) on 2026-08-10. Every item below
 cites the file and line it came from, so Claude can verify each one before changing anything.
 

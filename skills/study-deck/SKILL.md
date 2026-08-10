@@ -28,9 +28,10 @@ For a generic talk/pitch deck, use `frontend-slides` instead. For ingesting a PD
 ## Workflow
 
 1. **Gather sources first — do not invent content.**
-   - **Hand-drawn references (highest priority):** check `C:\Users\WIN11\Downloads\` for the user's own diagrams (e.g. `Biology-1*.pdf`). When they exist they **define the visual conventions to match** — strand colors, per-enzyme colors, tRNA cloverleaf, ribosome shape, etc. Read them (Read tool handles PDFs). These files may be cleaned up over time — confirm they exist; don't assume.
-   - **Durable backbone:** the Obsidian vault concept notes, e.g. `C:\Users\WIN11\Obsidian\Vault\wiki\concepts\molecular-genetics.md` and `topics\molecular-cell-biology.md`, for quantitative facts. Search the vault for the topic before writing prose.
+   - **Hand-drawn references (highest priority):** check `<DOWNLOADS>\` for the user's own diagrams (e.g. `Biology-1*.pdf`). When they exist they **define the visual conventions to match** — strand colors, per-enzyme colors, tRNA cloverleaf, ribosome shape, etc. Read them (Read tool handles PDFs). These files may be cleaned up over time — confirm they exist; don't assume.
+   - **Durable backbone:** the Obsidian vault concept notes, e.g. `<VAULT_ROOT>\wiki\concepts\molecular-genetics.md` and `topics\molecular-cell-biology.md`, for quantitative facts. Search the vault for the topic before writing prose.
    - If no source exists, say so and ask, or build to olympiad-level rigor and flag what to verify.
+   - **Before shipping, hard-gate the prose the way `scientific-model` gates diagrams.** List every numeric claim, threshold, constant and named mechanism in the deck; mark each *sourced* (naming the file it came from) or *unsourced*; then surface the unsourced list to the user explicitly, not just as an inline flag. A wrong diagram gets caught when someone looks at it. A wrong constant in revision prose gets **memorised** — which is the exact opposite of what the deck is for.
 
 2. **Plan the lesson as a sequence.** List the components to introduce, then the process steps. Write a short outline and confirm scope/length with the user before building a long deck.
 
@@ -64,9 +65,19 @@ Single self-contained HTML file, inline CSS/JS, fonts from Google Fonts. (Full r
 - **Cinematic zoom transitions (scale-based):** `.ahead{scale(.82);opacity:0}` (waiting), `.active{scale(1);opacity:1}`, `.past{scale(1.22);opacity:0}` (zoom through). Add `.zoom-out` to a scene so the engine puts the PREVIOUS slide into `.recede{scale(.7)}` — reads as the camera pulling back. Use `transition: …, visibility 0s linear <dur>` on inactive slides so outgoing ones finish fading before they hide.
 - **Input:** debounced wheel + arrow/space/PageUp-Down keys + touch swipe; Home/End jump.
 
+## Thai typography on screen
+
+Thai has no spaces between words, so a wrong font stack or a missing language attribute yields either tofu boxes or line breaks in the middle of a word — and it looks *almost* right in a desktop screenshot, which is how it ships broken.
+
+- Set `<html lang="th">`, or `lang="th"` on the Thai container in a bilingual deck. Browsers use it to select line-breaking rules.
+- Font stack puts a Thai-capable family first, Latin fallback after: `font-family: 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif;`. Load only the weights you actually use.
+- Give Thai body copy a taller `line-height` than Latin — **1.7–1.9**. Thai stacks vowel and tone marks above and below the baseline, and they collide at 1.4.
+- Wrapping: `overflow-wrap: break-word` with `word-break: normal`. **Never `word-break: break-all` on Thai** — it breaks mid-syllable.
+- QA at **360px and 1440px**. Desktop-width screenshots hide every wrapping bug worth catching.
+
 ## Engine: scrollytelling pattern (mode 2 — verified on the nervous-system site)
 
-One long scrolling page, zero dependencies. Three mechanisms, all proven in `E:\Projects\biology-nervous-system-exam-prep\ติวสอบ-ระบบประสาท.html`:
+One long scrolling page, zero dependencies. Three mechanisms, all proven in `demos/study-deck/scrollytelling-nervous-system-th.html` (shipped with this package):
 
 - **Reveal on entry** — give content blocks `class="reveal"` (CSS: `opacity:0;transform:translateY(24px);transition`; `.vis` sets them visible). One IntersectionObserver adds `.vis`:
   ```js
@@ -123,9 +134,9 @@ One long scrolling page, zero dependencies. Three mechanisms, all proven in `E:\
 
 | What | Where |
 |---|---|
-| Hand-drawn diagrams (convention source) | `C:\Users\WIN11\Downloads\Biology-1*.pdf` (re-confirm they exist) |
-| Quantitative concept facts | `C:\Users\WIN11\Obsidian\Vault\wiki\concepts\molecular-genetics.md`, `topics\molecular-cell-biology.md` |
+| Hand-drawn diagrams (convention source) | `<DOWNLOADS>\Biology-1*.pdf` (re-confirm they exist) |
+| Quantitative concept facts | `<VAULT_ROOT>\wiki\concepts\molecular-genetics.md`, `topics\molecular-cell-biology.md` |
 | Base engine + style presets | `frontend-slides` skill (`SKILL.md`, `html-template.md`, `animation-patterns.md`) |
-| Zoom-step reference build | `E:\Projects\frontend-design-from-reels\central-dogma-replication.html` (DNA, glass+zoom) |
-| Scrollytelling reference build | `E:\Projects\biology-nervous-system-exam-prep\ติวสอบ-ระบบประสาท.html` (scroll-scrubbed AP curve, reveals, mock exam) |
+| Zoom-step reference build | `demos/study-deck/central-dogma-replication.html` (DNA, glass+zoom) |
+| Scrollytelling reference build | `demos/study-deck/scrollytelling-nervous-system-th.html` (scroll-scrubbed AP curve, reveals, mock exam) |
 | Audience context | vault `CLAUDE.md` (Thai STEM/olympiad student) |

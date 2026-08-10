@@ -21,11 +21,13 @@ I have a Claude Code setup package from a friend — the unzipped folder `claude
 
 2. Copy everything in its `skills/` folder into my `~/.claude/skills/` folder (on Windows, `%USERPROFILE%\.claude\skills\`). Don't overwrite any skill I already have with the same name — ask me first if there's a conflict.
 
-3. **Fix the paths that point at my friend's machine.** Several skills name folders on their computer as their reference material, and those folders don't exist for me. Nothing breaks — the skills are written to check before assuming — but go through these and either substitute my equivalent folder or delete the line, asking me when you're not sure:
-   - `dark-motion-site` — points at three demo HTML files. Move the 3 files from this package's `demos/` folder into my Downloads first, then update the paths to where they actually are on MY machine.
-   - `study-deck` — points at my friend's Downloads (hand-drawn diagram PDFs) and their Obsidian vault for source material.
-   - `thai-pdf` — mentions their archive drive as where deliverables get filed.
-   - `vault-pdf-ingest` and `obsidian-graph-coloring` — these are built entirely around their personal Obsidian vault. Ask me whether I use Obsidian: if yes, repoint them at my vault; if no, don't install these two at all.
+3. **Fill in the placeholders.** The skills use `<PLACEHOLDER>` markers instead of real paths, so nothing points at anyone else's machine. Search the installed skills for `<` and replace these with my own locations, asking me when you're not sure:
+   - `<VAULT_ROOT>` — my Obsidian vault folder. Used by `vault-pdf-ingest`, `obsidian-graph-coloring`, and `study-deck`.
+   - `<OBSIDIAN_EXE>` — path to the Obsidian executable (`obsidian-graph-coloring` only).
+   - `<DOWNLOADS>` — where I keep scanned/hand-drawn reference PDFs (`study-deck`).
+   - `<ARCHIVE_DRIVE>` — where finished work and source PDFs get filed, e.g. an external drive (`vault-pdf-ingest`, `thai-pdf`, `ship-ritual`).
+
+   Two notes: `dark-motion-site` and `study-deck` reference builds all ship inside this package's `demos/` folder with repo-relative paths, so those need nothing. And if I don't use Obsidian, just don't install `vault-pdf-ingest` or `obsidian-graph-coloring` at all — ask me first.
    - `honest-measurement` and `scientific-model` contain no machine-specific paths. Install those two exactly as they are and change nothing.
 
 4. Set up my `~/.claude/settings.json` using `extras/settings-example.json` as reference. Merge carefully with whatever settings I already have and show me the diff before saving. Two things matter here:

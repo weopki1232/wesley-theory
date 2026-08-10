@@ -9,15 +9,17 @@ The canonical, repeatable procedure for adding a textbook-sized PDF to the vault
 It operationalizes the `CLAUDE.md` INGEST operation into one checklist. Follow it
 in order; do not improvise.
 
-> **CUSTOMIZE ME:** Replace `<VAULT_ROOT>` with the vault's absolute path and the
-> domain tags `domain-a..d` with the real subjects, everywhere below.
+> **CUSTOMIZE ME:** Replace `<VAULT_ROOT>` with the vault's absolute path,
+> `<ARCHIVE_DRIVE>` with wherever source PDFs are archived (an external/backup
+> drive in the original setup), and the domain tags `domain-a..d` with the real
+> subjects — everywhere below.
 
 ## Golden rules (do not violate)
-- **Source PDFs live on the Kingston backup drive: `E:\Books\<Subject>\` — NOT vault `raw/`.**
+- **Source PDFs live on the archive/backup drive: `<ARCHIVE_DRIVE>\Books\<Subject>\` — NOT vault `raw/`.**
   Read the PDF in place during ingest; leave vault `raw/` empty. After the ingest
-  completes, MOVE the PDF to `E:\Books\<Subject>\` (Step 7b). Each source page's
-  Raw-file field points at that final `E:\` path. (This supersedes the CLAUDE.md
-  "copy the PDF into `raw/`" step for PDFs — Wesley's setup, 2026-06-24.)
+  completes, MOVE the PDF to `<ARCHIVE_DRIVE>\Books\<Subject>\` (Step 7b). Each source page's
+  Raw-file field points at that final archive path. (This supersedes the CLAUDE.md
+  "copy the PDF into `raw/`" step for PDFs.)
   Subject folders: `Biology` · `Business-Economics` · `Chemistry` · `Math` ·
   `Nursing-Health` · `Physics` · `Other` (· `_Archives`).
 - Every concept node's `tags:` FIRST entry MUST be a domain
@@ -45,8 +47,8 @@ in order; do not improvise.
 
 ### Step 0 — Pre-flight
 1. Note the PDF's **current** path (e.g. `Downloads`). Do NOT copy it into vault `raw/`
-   — it's read in place and gets MOVED to `E:\Books\<Subject>\` at the end (Step 7b).
-   Pick `slug` = `src-<kebab>`, the kebab filename, and the matching `E:\Books` subject
+   — it's read in place and gets MOVED to `<ARCHIVE_DRIVE>\Books\<Subject>\` at the end (Step 7b).
+   Pick `slug` = `src-<kebab>`, the kebab filename, and the matching `<ARCHIVE_DRIVE>\Books` subject
    folder now so the source page's Raw-file field can point at the final path.
 2. Get page count + TOC + license (read in place):
    ```python
@@ -116,9 +118,9 @@ condition and the color groups if a node still shows grey.)
 - Update `wiki/vault-state.md`: add nodes to the domain line, bump the count in the
   header, add a Sources-table row, update Open Threads, bump `updated:` date.
 
-### Step 7b — Archive PDF to Kingston (E:)
+### Step 7b — Archive PDF to the backup drive
 **Only after the ingest is otherwise complete** (source page + nodes + indices + color +
-log all done), move the source PDF to its subject folder on the Kingston backup drive.
+log all done), move the source PDF to its subject folder on the archive/backup drive.
 This is a move (irreversible-ish) → verify the destination, then confirm it landed:
 ```
 mkdir -p "/e/Books/<Subject>"
@@ -128,11 +130,11 @@ ls -la "/e/Books/<Subject>/<Kebab-Name>.pdf"   # confirm before reporting
 Subject ↔ domain map: `biology`→Biology · `physics`→Physics · `chemistry`→Chemistry ·
 `mathematics`→Math · `finance`/`economics`/management/business→Business-Economics ·
 nursing/clinical/medicine→Nursing-Health · `engineering`/`humanities`/misc→Other.
-The source page's Raw-file field must already read `E:\Books\<Subject>\<Kebab-Name>.pdf`.
+The source page's Raw-file field must already read `<ARCHIVE_DRIVE>\Books\<Subject>\<Kebab-Name>.pdf`.
 
 ### Step 8 — Report
 List every file created/edited, confirm the color audit passed, and confirm the PDF was
-moved to `E:\Books\<Subject>\`. If phase-split, say exactly what remains for the next
+moved to `<ARCHIVE_DRIVE>\Books\<Subject>\`. If phase-split, say exactly what remains for the next
 session (and whether the PDF move is deferred to that session).
 
 ---

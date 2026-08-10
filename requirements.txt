@@ -1,0 +1,37 @@
+# Python dependencies for the skills in this package.
+#   pip install -r requirements.txt
+#
+# This list was built from the actual import statements across skills/**, not from
+# the skill names. Two things that surprise people:
+#   * python-docx is NOT here. The `docx` skill manipulates raw OOXML through
+#     lxml + defusedxml; it never imports python-docx.
+#   * pymupdf is imported as `import fitz`, and it is `thai-pdf` that needs it,
+#     not the Office skills.
+
+# --- Office / OOXML (docx, pptx, xlsx) ---
+defusedxml
+lxml
+openpyxl
+python-pptx
+
+# --- PDF (pdf, thai-pdf) ---
+pdf2image
+pdfplumber
+pymupdf
+pypdf
+
+# --- Imaging & measurement (honest-measurement, pptx thumbnails, pdf validation) ---
+numpy
+Pillow
+
+# --- Browser automation (honest-measurement harness) ---
+# After installing, also run:  playwright install chromium
+playwright
+
+# --- Optional -------------------------------------------------------------
+# Only used by example snippets inside the skill documentation. Install if you
+# follow those examples; nothing in the package imports them at runtime.
+# reportlab      # pdf/SKILL.md - generating PDFs from scratch
+# pytesseract    # pdf/SKILL.md - OCR (also needs the tesseract binary)
+# pypdfium2      # pdf/reference.md - alternative renderer
+# pandas         # xlsx/SKILL.md, pdf/SKILL.md - tabular examples

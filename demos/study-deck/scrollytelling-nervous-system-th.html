@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ติวสอบชีววิทยา 5 · ระบบประสาทและสมอง</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;600;700&family=Sarabun:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   ธีม "Electric Neuron" — พื้นเข้ม + เส้นเรืองแสง
+   Na⁺ = ส้มอำพัน  |  K⁺ = ม่วง  |  โครง = ฟ้า/เขียวมิ้นต์
+   ============================================================ */
+:root{
+  --bg:#070b16;
+  --bg2:#0c1424;
+  --panel:#111c30;
+  --panel2:#16243c;
+  --ink:#eaf1ff;
+  --muted:#9fb0cc;
+  --line:#22344f;
+  --cyan:#38e1d6;
+  --blue:#4aa8ff;
+  --na:#ff9d3c;      /* โซเดียม */
+  --k:#b57cff;       /* โพแทสเซียม */
+  --ca:#ffd23c;      /* แคลเซียม */
+  --pink:#ff5d8f;
+  --green:#57e08a;
+  --good:#42d98a;
+  --bad:#ff6b6b;
+  --glow:0 0 24px;
+  --maxw:1080px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Sarabun",sans-serif;font-weight:400;line-height:1.7;
+  font-size:18px;overflow-x:hidden;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(74,168,255,.10), transparent 60%),
+    radial-gradient(900px 500px at 0% 20%, rgba(181,124,255,.08), transparent 55%),
+    radial-gradient(1000px 700px at 50% 120%, rgba(56,225,214,.07), transparent 60%),
+    var(--bg);
+}
+h1,h2,h3,.k{font-family:"Kanit",sans-serif;font-weight:600;line-height:1.25}
+.mono{font-family:"Space Mono",monospace}
+
+/* progress bar */
+#prog{position:fixed;top:0;left:0;height:4px;width:0;z-index:120;
+  background:linear-gradient(90deg,var(--na),var(--cyan),var(--k));
+  box-shadow:0 0 14px rgba(56,225,214,.7)}
+/* nav dots */
+#dots{position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:110;
+  display:flex;flex-direction:column;gap:11px}
+#dots a{width:11px;height:11px;border-radius:50%;background:#2a3c5a;border:1px solid #3a5074;
+  transition:.25s;display:block}
+#dots a.on{background:var(--cyan);box-shadow:0 0 12px var(--cyan);transform:scale(1.35)}
+@media(max-width:820px){#dots{display:none}}
+
+/* section shell */
+section{position:relative;padding:78px 22px;max-width:var(--maxw);margin:0 auto}
+.tag{display:inline-block;font-family:"Kanit";font-weight:500;font-size:13px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--cyan);border:1px solid var(--line);
+  padding:5px 13px;border-radius:999px;background:rgba(56,225,214,.06);margin-bottom:16px}
+.tag.na{color:var(--na);background:rgba(255,157,60,.07)}
+.tag.k{color:var(--k);background:rgba(181,124,255,.07)}
+.tag.pink{color:var(--pink);background:rgba(255,93,143,.07)}
+h2{font-size:clamp(28px,5vw,46px);margin:.1em 0 .35em}
+h2 .accent{color:var(--cyan)}
+.lead{color:var(--muted);font-size:clamp(17px,2.4vw,21px);max-width:760px}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(38px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.vis{opacity:1;transform:none}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}.d5{transition-delay:.40s}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+
+/* cards / grid */
+.card{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);
+  border-radius:18px;padding:22px 24px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.grid{display:grid;gap:18px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:820px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.chip{display:inline-block;padding:3px 11px;border-radius:8px;font-size:14px;font-weight:600;font-family:"Kanit"}
+.chip.na{background:rgba(255,157,60,.15);color:var(--na);border:1px solid rgba(255,157,60,.4)}
+.chip.k{background:rgba(181,124,255,.15);color:var(--k);border:1px solid rgba(181,124,255,.4)}
+.chip.ca{background:rgba(255,210,60,.15);color:var(--ca);border:1px solid rgba(255,210,60,.4)}
+b,strong{color:#fff;font-weight:700}
+.hl{color:var(--cyan);font-weight:600}
+.hl-na{color:var(--na);font-weight:700}
+.hl-k{color:var(--k);font-weight:700}
+.small{font-size:15px;color:var(--muted)}
+ul.clean{list-style:none;padding:0;margin:10px 0}
+ul.clean li{padding:7px 0 7px 30px;position:relative;border-bottom:1px dashed var(--line)}
+ul.clean li:before{content:"▸";position:absolute;left:6px;color:var(--cyan)}
+ul.clean li:last-child{border-bottom:0}
+
+/* ===== HERO ===== */
+#hero{max-width:none;min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+  align-items:center;text-align:center;padding:40px 22px;overflow:hidden}
+#hero canvas{position:absolute;inset:0;z-index:0;opacity:.55}
+.hero-inner{position:relative;z-index:2;max-width:900px}
+#hero .eyebrow{font-family:"Kanit";letter-spacing:.32em;color:var(--cyan);font-size:14px;text-transform:uppercase;margin-bottom:18px}
+#hero h1{font-size:clamp(38px,8vw,82px);font-weight:700;margin:0;color:#f4f8ff}
+#hero h1 .spark{color:var(--cyan)}
+#hero .sub{font-family:"Kanit";font-weight:300;font-size:clamp(18px,3.4vw,26px);color:var(--ink);margin-top:8px}
+#hero .meta{color:var(--muted);margin-top:22px;font-size:17px}
+.scroll-cue{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:3;color:var(--muted);
+  font-family:"Kanit";font-size:13px;letter-spacing:.2em;text-align:center}
+.scroll-cue .m{width:26px;height:42px;border:2px solid var(--muted);border-radius:14px;margin:0 auto 8px;position:relative}
+.scroll-cue .m:after{content:"";position:absolute;top:7px;left:50%;transform:translateX(-50%);
+  width:4px;height:8px;border-radius:2px;background:var(--cyan);animation:wheel 1.5s infinite}
+@keyframes wheel{0%{opacity:0;top:7px}40%{opacity:1}100%{opacity:0;top:22px}}
+
+/* exam callout */
+.examgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:820px){.examgrid{grid-template-columns:1fr}}
+.qcard{border:1px solid var(--line);border-radius:18px;padding:22px;position:relative;overflow:hidden;
+  background:linear-gradient(160deg,rgba(255,157,60,.06),var(--bg2))}
+.qcard.two{background:linear-gradient(160deg,rgba(181,124,255,.07),var(--bg2))}
+.qcard .num{font-family:"Kanit";font-weight:700;font-size:54px;line-height:1;opacity:.25;position:absolute;right:16px;top:6px}
+.qcard h3{font-size:22px;margin:.1em 0 .4em}
+
+/* ===== NEURON diagram ===== */
+.figwrap{background:linear-gradient(180deg,#0a1120,#0c1526);border:1px solid var(--line);border-radius:20px;padding:18px;overflow:hidden}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;font-size:14px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.dotc{width:13px;height:13px;border-radius:50%;display:inline-block}
+
+/* ===== Action Potential sticky ===== */
+#apwrap{position:relative}
+.apstage{position:sticky;top:0;height:100vh;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;padding:12px}
+.apcard{width:min(960px,96vw);background:linear-gradient(180deg,var(--panel),#0a1220);
+  border:1px solid var(--line);border-radius:20px;padding:16px 18px 8px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.apsvgbox{position:relative}
+.phaselabel{min-height:96px;text-align:center;margin-top:4px}
+.phaselabel .pl-name{font-family:"Kanit";font-weight:600;font-size:clamp(20px,3.4vw,30px)}
+.phaselabel .pl-desc{color:var(--muted);font-size:15px;max-width:720px;margin:4px auto 0}
+.chstate{display:flex;gap:26px;justify-content:center;margin:6px 0 2px;flex-wrap:wrap}
+.chstate .ch{display:flex;align-items:center;gap:9px;font-family:"Kanit";font-weight:600;font-size:15px}
+.ledbox{padding:3px 12px;border-radius:8px;font-family:"Space Mono";font-weight:700;font-size:14px;letter-spacing:.05em}
+.led-open{background:rgba(87,224,138,.18);color:var(--good);border:1px solid rgba(87,224,138,.5);box-shadow:0 0 14px rgba(87,224,138,.25)}
+.led-close{background:rgba(120,140,170,.12);color:#8fa2c0;border:1px solid #33465f}
+.apscroll-hint{ text-align:center;color:var(--muted);font-family:"Kanit";font-size:13px;letter-spacing:.16em;margin-top:2px}
+.apspacer{height:60vh}
+
+/* table */
+table.key{width:100%;border-collapse:collapse;font-size:15px;margin-top:6px;overflow:hidden;border-radius:12px}
+table.key th,table.key td{border:1px solid var(--line);padding:9px 10px;text-align:center}
+table.key th{background:var(--panel2);font-family:"Kanit";font-weight:600;color:var(--ink)}
+table.key td:first-child{font-family:"Space Mono";font-weight:700;color:var(--cyan)}
+.cell-open{color:var(--good);font-weight:700}
+.cell-close{color:#8fa2c0}
+
+/* synapse steps */
+.step{display:flex;gap:16px;align-items:flex-start;padding:14px 0;border-bottom:1px dashed var(--line)}
+.step:last-child{border-bottom:0}
+.step .n{flex:0 0 40px;height:40px;border-radius:50%;display:grid;place-items:center;
+  font-family:"Kanit";font-weight:700;background:rgba(56,225,214,.12);color:var(--cyan);border:1px solid rgba(56,225,214,.4)}
+
+/* brain */
+.brainrow{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;align-items:center}
+@media(max-width:900px){.brainrow{grid-template-columns:1fr}}
+.brain-part{cursor:pointer;transition:.2s}
+.brain-part:hover{filter:brightness(1.25)}
+.blabel{font-family:"Kanit";font-weight:600;font-size:13px;fill:#eaf1ff;pointer-events:none}
+.bfunc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;min-height:150px}
+.bfunc h3{margin:0 0 6px;font-size:20px}
+.bpill{display:inline-block;margin:4px 6px 0 0;padding:5px 12px;border-radius:999px;border:1px solid var(--line);
+  background:var(--bg2);font-family:"Kanit";font-weight:500;font-size:14px;cursor:pointer;transition:.2s}
+.bpill:hover,.bpill.on{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 14px rgba(56,225,214,.2)}
+
+/* ===== MOCK EXAM ===== */
+#exam{max-width:var(--maxw)}
+.exam-head{background:linear-gradient(120deg,rgba(255,93,143,.10),rgba(56,225,214,.08));
+  border:1px solid var(--line);border-radius:20px;padding:26px;text-align:center;margin-bottom:26px}
+.mcq{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin:16px 0}
+.mcq .qh{font-family:"Kanit";font-weight:600;font-size:18px;margin-bottom:12px}
+.opt{display:block;width:100%;text-align:left;background:var(--bg2);border:1px solid var(--line);color:var(--ink);
+  padding:12px 15px;border-radius:11px;margin:8px 0;cursor:pointer;font-family:"Sarabun";font-size:16px;transition:.16s}
+.opt:hover{border-color:var(--blue);background:#14203a}
+.opt.correct{border-color:var(--good);background:rgba(66,217,138,.14);color:#c9ffe0}
+.opt.wrong{border-color:var(--bad);background:rgba(255,107,107,.12);color:#ffd4d4}
+.opt.disabled{pointer-events:none;opacity:.85}
+.expl{margin-top:10px;padding:12px 14px;border-left:3px solid var(--cyan);background:rgba(56,225,214,.06);
+  border-radius:0 10px 10px 0;font-size:15px;color:#d6e4ff;display:none}
+.expl.show{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+
+/* AP interactive question */
+.apq-row{display:grid;grid-template-columns:64px 1.3fr 1fr 1fr;gap:8px;align-items:center;
+  padding:9px;border:1px solid var(--line);border-radius:11px;margin:8px 0;background:var(--bg2)}
+@media(max-width:820px){.apq-row{grid-template-columns:1fr 1fr}}
+.apq-row .pt{font-family:"Space Mono";font-weight:700;color:var(--cyan);font-size:20px;text-align:center}
+.sel{width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:9px;
+  padding:9px;font-family:"Sarabun";font-size:14px}
+.sel.ok{border-color:var(--good);background:rgba(66,217,138,.12)}
+.sel.no{border-color:var(--bad);background:rgba(255,107,107,.12)}
+.btn{font-family:"Kanit";font-weight:600;font-size:16px;padding:12px 26px;border-radius:12px;border:0;cursor:pointer;
+  background:linear-gradient(120deg,var(--cyan),var(--blue));color:#04121f;box-shadow:0 8px 24px rgba(56,225,214,.25);transition:.2s}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.scorebox{text-align:center;font-family:"Kanit";font-weight:700;font-size:22px;margin-top:14px;min-height:30px}
+
+/* brain quiz */
+.bq-slot{position:relative}
+.bq-input{width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:8px;font-family:"Sarabun";font-size:14px}
+.bq-input.ok{border-color:var(--good);background:rgba(66,217,138,.12)}
+.bq-input.no{border-color:var(--bad);background:rgba(255,107,107,.12)}
+.matchrow{display:grid;grid-template-columns:1fr 220px;gap:10px;align-items:center;padding:8px;border-bottom:1px dashed var(--line)}
+@media(max-width:820px){.matchrow{grid-template-columns:1fr}}
+
+/* schedule */
+.tl{position:relative;margin-top:20px;padding-left:22px}
+.tl:before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--na),var(--cyan),var(--k))}
+.tl-item{position:relative;padding:0 0 20px 22px}
+.tl-item:before{content:"";position:absolute;left:-1px;top:6px;width:14px;height:14px;border-radius:50%;
+  background:var(--bg);border:3px solid var(--cyan);box-shadow:0 0 10px var(--cyan)}
+.tl-item.sleep:before{border-color:var(--k);box-shadow:0 0 10px var(--k)}
+.tl-item.exam:before{border-color:var(--na);box-shadow:0 0 12px var(--na)}
+.tl-time{font-family:"Space Mono";font-weight:700;color:var(--cyan);font-size:15px}
+.tl-item.sleep .tl-time{color:var(--k)}.tl-item.exam .tl-time{color:var(--na)}
+.tl-title{font-family:"Kanit";font-weight:600;font-size:18px;margin:2px 0}
+
+footer{text-align:center;padding:60px 20px 80px;color:var(--muted)}
+footer .big{font-family:"Kanit";font-weight:700;font-size:clamp(24px,5vw,40px);color:#f4f8ff}
+.note{font-size:13px;color:#7386a5;max-width:640px;margin:14px auto 0}
+::selection{background:var(--cyan);color:#04121f}
+</style>
+</head>
+<body>
+<div id="prog"></div>
+<nav id="dots"></nav>
+
+<!-- ================= HERO ================= -->
+<section id="hero" data-dot="ปก">
+  <canvas id="net"></canvas>
+  <div class="hero-inner">
+    <div class="eyebrow">ชีววิทยา 5 · ว33241 · หน่วยที่ 1</div>
+    <h1>ระบบประสาท<br>และ<span class="spark">สมอง</span></h1>
+    <div class="sub">ติวเข้มก่อนสอบ — เลื่อนลงเพื่อเริ่มเรียน</div>
+    <div class="meta">โฟกัส 2 ข้ออัตนัยที่ออกชัวร์ : <b>กราฟ Action potential</b> &nbsp;·&nbsp; <b>ชี้ส่วนของสมอง</b><br>
+    ปิดท้ายด้วย <span class="hl">ข้อสอบจำลองแบบโต้ตอบ</span> ตรวจให้ทันที</div>
+  </div>
+  <div class="scroll-cue"><div class="m"></div>SCROLL</div>
+</section>
+
+<!-- ================= EXAM MAP ================= -->
+<section data-dot="แนวข้อสอบ">
+  <div class="reveal"><span class="tag">แนวข้อสอบ · เก็บ 10 คะแนน</span>
+  <h2>ข้อสอบออก<span class="accent">อะไรบ้าง</span>?</h2>
+  <p class="lead">รู้ก่อนว่าเจออะไร จะได้อ่านตรงจุด ข้อสอบชุดนี้มาจากชีท 01–03 ของครูขวัญชนก</p></div>
+
+  <div class="grid g2 reveal d1" style="margin-top:22px">
+    <div class="card">
+      <span class="chip" style="background:rgba(74,168,255,.15);color:var(--blue);border:1px solid rgba(74,168,255,.4)">ปรนัย · 24 ข้อ</span>
+      <h3 class="k" style="margin:.4em 0">8 คะแนน — ออกชีท 01–03</h3>
+      <ul class="clean small">
+        <li>01 · การรับรู้และการตอบสนองของสัตว์</li>
+        <li>02 · โครงสร้าง+การทำงานของเซลล์ประสาท (neuron/glia, Na⁺-K⁺ pump, action potential, การนำกระแสประสาท, ไซแนปส์, สารเคมีต่อการส่งกระแสประสาท)</li>
+        <li>03 · ศูนย์ควบคุมระบบประสาท (สมองส่วนต่าง ๆ + วิวัฒนาการสมองในสัตว์มีกระดูกสันหลัง)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="chip" style="background:rgba(255,93,143,.15);color:var(--pink);border:1px solid rgba(255,93,143,.4)">อัตนัย · 2 ข้อใหญ่</span>
+      <h3 class="k" style="margin:.4em 0">2 คะแนน — ครอบคลุม</h3>
+      <ul class="clean small">
+        <li>Action potential &nbsp;·&nbsp; Synapse</li>
+        <li>โครงสร้างเซลล์ประสาท</li>
+        <li>โครงสร้าง+หน้าที่ของสมองมนุษย์</li>
+        <li>การตอบสนองของสัตว์</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="reveal d2" style="margin-top:26px">
+    <p class="lead" style="margin-bottom:14px">🎯 <b>2 ข้ออัตนัยที่เพื่อนบอกว่าออกแน่ ๆ</b> — เราจะซ้อมทั้งสองข้อนี้ให้ทำได้อัตโนมัติ</p>
+    <div class="examgrid">
+      <div class="qcard"><div class="num">1</div>
+        <span class="chip na">Na⁺ / K⁺</span>
+        <h3 class="k">กราฟ Action potential</h3>
+        <p class="small">โจทย์ให้กราฟศักย์ไฟฟ้าที่แอกซอน มีเลขกำกับแต่ละช่วง → บอกว่าเป็น<b>ระยะอะไร</b> และ<b>ช่องโซเดียม / โพแทสเซียม (แบบมีประตู) เปิดหรือปิด</b></p>
+      </div>
+      <div class="qcard two"><div class="num">2</div>
+        <span class="chip k">Brain</span>
+        <h3 class="k">ชี้ส่วนประกอบของสมอง</h3>
+        <p class="small">โจทย์ให้รูปสมอง (ผ่าครึ่ง) → <b>เขียนชื่อส่วนต่าง ๆ</b> และ<b>จับคู่หน้าที่</b>กับสมองแต่ละส่วน</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= NEURON ================= -->
+<section data-dot="เซลล์ประสาท">
+  <div class="reveal"><span class="tag">ชีท 02 · พื้นฐาน</span>
+  <h2>เซลล์ประสาท <span class="accent">(Neuron)</span></h2>
+  <p class="lead">หน่วยพื้นฐานที่รับ–ส่งกระแสประสาท ประกอบด้วย 3 ส่วนหลัก จำโครงให้ได้ก่อน แล้วเรื่องอื่นจะต่อยอดง่ายขึ้น</p></div>
+
+  <div class="figwrap reveal d1" style="margin-top:20px">
+    <svg viewBox="0 0 960 300" width="100%" role="img" aria-label="แผนภาพเซลล์ประสาท">
+      <!-- dendrites -->
+      <g stroke="#57e08a" stroke-width="3" fill="none" opacity=".95">
+        <path d="M120,150 L60,90"/><path d="M120,150 L55,130"/><path d="M120,150 L60,200"/>
+        <path d="M120,150 L95,60"/><path d="M120,150 L100,235"/>
+        <path d="M60,90 L40,70"/><path d="M60,90 L48,105"/><path d="M60,200 L42,215"/>
+      </g>
+      <!-- cell body -->
+      <ellipse cx="150" cy="150" rx="42" ry="36" fill="#123152" stroke="#57e08a" stroke-width="3"/>
+      <circle cx="150" cy="150" r="15" fill="#1b4a78" stroke="#8fe3ff" stroke-width="2"/>
+      <!-- axon -->
+      <rect x="192" y="140" width="470" height="20" rx="10" fill="#123152" stroke="#4aa8ff" stroke-width="2"/>
+      <!-- myelin sheaths -->
+      <g fill="#2a1a4a" stroke="#b57cff" stroke-width="2">
+        <rect x="270" y="128" width="70" height="44" rx="16"/>
+        <rect x="380" y="128" width="70" height="44" rx="16"/>
+        <rect x="490" y="128" width="70" height="44" rx="16"/>
+      </g>
+      <!-- axon terminals -->
+      <g stroke="#4aa8ff" stroke-width="3" fill="none">
+        <path d="M662,150 L720,110"/><path d="M662,150 L730,150"/><path d="M662,150 L720,190"/>
+      </g>
+      <g fill="#4aa8ff"><circle cx="722" cy="108" r="8"/><circle cx="733" cy="150" r="8"/><circle cx="722" cy="192" r="8"/></g>
+      <!-- pulse -->
+      <circle r="7" fill="#ff9d3c" filter="url(#g1)">
+        <animateMotion dur="2.6s" repeatCount="indefinite" path="M150,150 L662,150"/>
+      </circle>
+      <defs><filter id="g1"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+      <!-- labels -->
+      <text x="40" y="255" class="blabel" fill="#57e08a">เดนไดรต์ (dendrite)</text>
+      <text x="120" y="215" class="blabel" fill="#8fe3ff">ตัวเซลล์ (cell body)</text>
+      <text x="360" y="205" class="blabel" fill="#4aa8ff">แอกซอน (axon)</text>
+      <text x="300" y="115" class="blabel" fill="#b57cff">เยื่อไมอีลิน (myelin sheath)</text>
+      <text x="600" y="120" class="blabel" fill="#eaf1ff" font-size="11">โนดออฟแรนเวียร์</text>
+      <text x="690" y="215" class="blabel" fill="#4aa8ff">ปลายแอกซอน</text>
+    </svg>
+    <div class="legend">
+      <span><i class="dotc" style="background:#57e08a"></i>เดนไดรต์ — รับสัญญาณเข้า</span>
+      <span><i class="dotc" style="background:#8fe3ff"></i>ตัวเซลล์ — มีนิวเคลียส</span>
+      <span><i class="dotc" style="background:#4aa8ff"></i>แอกซอน — ส่งกระแสออก</span>
+      <span><i class="dotc" style="background:#b57cff"></i>เยื่อไมอีลิน — ฉนวน เร่งความเร็ว</span>
+      <span><i class="dotc" style="background:#ff9d3c"></i>ทิศทางกระแสประสาท</span>
+    </div>
+  </div>
+
+  <div class="grid g3 reveal d2" style="margin-top:22px">
+    <div class="card"><h3 class="k">แบ่งตามรูปร่าง (จำนวนขั้ว)</h3>
+      <ul class="clean small">
+        <li><b>ขั้วเดียว</b> (unipolar) — พบในปมประสาทรากบนไขสันหลัง</li>
+        <li><b>สองขั้ว</b> (bipolar) — เซลล์รับกลิ่น, เรตินา, หูชั้นใน</li>
+        <li><b>หลายขั้ว</b> (multipolar) — <b>พบมากที่สุด</b> เซลล์สั่งการ/ประสานงาน</li>
+      </ul>
+    </div>
+    <div class="card"><h3 class="k">แบ่งตามหน้าที่</h3>
+      <ul class="clean small">
+        <li><b>รับความรู้สึก</b> (sensory) — รับเข้าจากหน่วยรับความรู้สึก</li>
+        <li><b>สั่งการ</b> (motor) — ส่งไปหน่วยปฏิบัติงาน (กล้ามเนื้อ/ต่อม)</li>
+        <li><b>ประสานงาน</b> (association) — อยู่ในสมอง+ไขสันหลัง เชื่อม 2 ชนิดบน</li>
+      </ul>
+    </div>
+    <div class="card"><h3 class="k">เซลล์เกลีย (glia)</h3>
+      <p class="small">เซลล์ค้ำจุน ไม่ได้นำกระแสประสาทเอง แต่<b>ขาดไม่ได้</b> — หล่อเลี้ยง ป้องกัน สร้างเยื่อไมอีลิน และรักษาสมดุลรอบเซลล์ประสาท ถ้าไม่มีเกลีย ระบบประสาททำงานปกติไม่ได้</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RESTING POTENTIAL ================= -->
+<section data-dot="ศักย์พัก">
+  <div class="reveal"><span class="tag na">ก่อนเข้ากราฟใหญ่</span>
+  <h2>ศักย์ไฟฟ้าเยื่อเซลล์<span class="accent">ระยะพัก</span></h2>
+  <p class="lead">ค่าประมาณ <b class="mono">−70 mV</b> (อยู่ระหว่าง −60 ถึง −80) ภายในเซลล์เป็นลบเมื่อเทียบกับภายนอก นี่คือ “จุดเริ่มต้น” ก่อนเกิดกระแสประสาท</p></div>
+
+  <div class="grid g2 reveal d1" style="margin-top:20px">
+    <div class="card">
+      <h3 class="k">ทำไมภายในถึงเป็นลบ?</h3>
+      <ul class="clean small">
+        <li><b>Na⁺-K⁺ pump</b> ปั๊ม <span class="hl-na">Na⁺ ออก</span> : <span class="hl-k">K⁺ เข้า</span> = <b>3 : 2</b> ใช้พลังงาน (active transport)</li>
+        <li><span class="hl-k">K⁺</span> รั่วออกทาง K⁺ leak channel ได้มากกว่า Na⁺ รั่วเข้า → เสียประจุบวกออกไป</li>
+        <li>ในเซลล์มี<b>โปรตีน + กรดนิวคลีอิก</b>ประจุลบ ออกไปไม่ได้</li>
+      </ul>
+      <p class="small" style="margin-top:8px">💡 ถ้าไม่มี ATP → ปั๊มหยุด → ค่อย ๆ เสียศักย์ไฟฟ้าระยะพัก</p>
+    </div>
+    <div class="card">
+      <h3 class="k">ความเข้มข้นไอออน (mM)</h3>
+      <table class="key">
+        <tr><th>ไอออน</th><th>ในเซลล์</th><th>นอกเซลล์</th></tr>
+        <tr><td style="color:var(--k)">K⁺</td><td><b>140</b> (สูง)</td><td>5</td></tr>
+        <tr><td style="color:var(--na)">Na⁺</td><td>15</td><td><b>150</b> (สูง)</td></tr>
+      </table>
+      <p class="small" style="margin-top:10px">จำง่าย ๆ : <span class="hl-k">K⁺ อยู่ในบ้าน</span> (ในเซลล์เยอะ) · <span class="hl-na">Na⁺ อยู่นอกบ้าน</span> (นอกเซลล์เยอะ)</p>
+    </div>
+  </div>
+
+  <div class="card reveal d2" style="margin-top:18px">
+    <h3 class="k">ช่องไอออน (ion channel) 2 แบบ — ต้องแยกให้ออก</h3>
+    <div class="grid g2" style="margin-top:6px">
+      <div><b>ไม่มีประตู</b> (leak / ungated) — เปิดตลอด ให้ไอออนรั่วตามความเข้มข้น → กำหนดศักย์ไฟฟ้า<b>ระยะพัก</b></div>
+      <div><b>มีประตู</b> (voltage-gated) — เปิด/ปิดตามแรงดันไฟฟ้า → ทำให้เกิด<b>action potential</b><br>
+        <span class="small"><span class="chip k">K⁺ gated</span> 2 สถานะ (เปิด/ปิด) · <span class="chip na">Na⁺ gated</span> 3 สถานะ (ปิดพร้อมใช้ / เปิด / ปิดไม่พร้อมใช้-inactivation)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ACTION POTENTIAL (STICKY SCROLL) ================= -->
+<section data-dot="Action potential" style="max-width:none;padding:0">
+  <div style="max-width:var(--maxw);margin:0 auto;padding:78px 22px 0">
+    <div class="reveal"><span class="tag na">อัตนัยข้อ 1 · ★ ออกแน่</span>
+    <h2>Action Potential <span class="accent">ทีละระยะ</span></h2>
+    <p class="lead">เลื่อนช้า ๆ — กราฟจะวาดตัวเอง จุด ● จะวิ่งไปตามกราฟ และช่อง <span class="hl-na">Na⁺</span> / <span class="hl-k">K⁺</span> จะเปิด-ปิดให้ดูตามระยะจริง สังเกตความสัมพันธ์ให้ขึ้นใจ</p></div>
+  </div>
+
+  <div id="apwrap">
+    <div class="apstage">
+      <div class="apcard">
+        <div class="apsvgbox">
+          <svg id="apsvg" viewBox="0 0 900 380" width="100%">
+            <!-- grid + axes -->
+            <line x1="70" y1="40" x2="70" y2="330" stroke="#33465f" stroke-width="2"/>
+            <line x1="70" y1="330" x2="860" y2="330" stroke="#33465f" stroke-width="2"/>
+            <!-- y ticks -->
+            <g fill="#7386a5" font-family="Space Mono" font-size="13">
+              <text x="20" y="60">+50</text>
+              <text x="30" y="150">0</text>
+              <text x="20" y="235">−50</text>
+              <text x="18" y="300">−70</text>
+              <text x="16" y="330">−90</text>
+            </g>
+            <text x="850" y="352" fill="#7386a5" font-family="Kanit" font-size="14" text-anchor="end">เวลา →</text>
+            <text x="86" y="30" fill="#7386a5" font-family="Kanit" font-size="13">ศักย์ไฟฟ้าเยื่อเซลล์ (mV)</text>
+            <!-- threshold + rest reference lines -->
+            <line x1="70" y1="253" x2="860" y2="253" stroke="#ff6b6b" stroke-width="1.4" stroke-dasharray="6 6" opacity=".6"/>
+            <text x="864" y="257" fill="#ff6b6b" font-size="11" font-family="Space Mono">−55 threshold</text>
+            <line x1="70" y1="288" x2="860" y2="288" stroke="#57e08a" stroke-width="1.2" stroke-dasharray="4 6" opacity=".45"/>
+            <!-- the AP curve -->
+            <path id="apcurve" fill="none" stroke="url(#apgrad)" stroke-width="5" stroke-linecap="round"
+              d="M70,288 L150,288 Q190,285 215,270 L235,255 Q250,240 265,180 L285,90 Q292,62 300,62 Q312,62 322,110 L345,210 Q356,255 372,300 L390,312 Q408,318 430,300 Q452,285 500,288 L860,288"/>
+            <defs>
+              <linearGradient id="apgrad" x1="0" x2="1">
+                <stop offset="0" stop-color="#38e1d6"/><stop offset=".33" stop-color="#ff9d3c"/>
+                <stop offset=".6" stop-color="#b57cff"/><stop offset="1" stop-color="#38e1d6"/>
+              </linearGradient>
+              <filter id="dg"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <!-- numbered markers -->
+            <g id="apmarks" font-family="Space Mono" font-weight="700" font-size="15">
+              <g data-x="120"><circle cx="120" cy="288" r="13" fill="#0c1526" stroke="#38e1d6" stroke-width="2"/><text x="120" y="293" text-anchor="middle" fill="#38e1d6">1</text></g>
+              <g data-x="225"><circle cx="225" cy="262" r="13" fill="#0c1526" stroke="#ff9d3c" stroke-width="2"/><text x="225" y="267" text-anchor="middle" fill="#ff9d3c">2</text></g>
+              <g data-x="298"><circle cx="298" cy="62" r="13" fill="#0c1526" stroke="#ff9d3c" stroke-width="2"/><text x="298" y="67" text-anchor="middle" fill="#ff9d3c">3</text></g>
+              <g data-x="358"><circle cx="358" cy="240" r="13" fill="#0c1526" stroke="#b57cff" stroke-width="2"/><text x="358" y="245" text-anchor="middle" fill="#b57cff">4</text></g>
+              <g data-x="408"><circle cx="408" cy="315" r="13" fill="#0c1526" stroke="#b57cff" stroke-width="2"/><text x="408" y="320" text-anchor="middle" fill="#b57cff">5</text></g>
+              <g data-x="600"><circle cx="600" cy="288" r="13" fill="#0c1526" stroke="#38e1d6" stroke-width="2"/><text x="600" y="293" text-anchor="middle" fill="#38e1d6">6</text></g>
+            </g>
+            <!-- moving dot -->
+            <circle id="apdot" cx="70" cy="288" r="9" fill="#fff" filter="url(#dg)"/>
+          </svg>
+        </div>
+
+        <div class="chstate">
+          <div class="ch"><span class="chip na">Na⁺ gated</span> <span id="naLed" class="ledbox led-close">ปิด</span></div>
+          <div class="ch"><span class="chip k">K⁺ gated</span> <span id="kLed" class="ledbox led-close">ปิด</span></div>
+        </div>
+        <div class="phaselabel">
+          <div id="plName" class="pl-name" style="color:var(--cyan)">① ระยะพัก (resting state)</div>
+          <div id="plDesc" class="pl-desc">ช่อง Na⁺ และ K⁺ แบบมีประตูปิดทั้งคู่ ศักย์ไฟฟ้าคงที่ ~ −70 mV โดยมีเพียงการรั่วผ่าน leak channel</div>
+        </div>
+        <div class="apscroll-hint">↑ เลื่อนต่อเพื่อดำเนินกราฟ ↓</div>
+      </div>
+    </div>
+    <!-- scroll driver spacers: 6 phases -->
+    <div class="apspacer"></div><div class="apspacer"></div><div class="apspacer"></div>
+    <div class="apspacer"></div><div class="apspacer"></div><div class="apspacer"></div>
+  </div>
+
+  <div style="max-width:var(--maxw);margin:0 auto;padding:10px 22px 0">
+    <div class="card reveal">
+      <h3 class="k">ตารางสรุป — จำตารางนี้ให้ได้ = ได้คะแนนข้อ 1 เต็ม</h3>
+      <table class="key">
+        <tr><th>จุด</th><th>ระยะ</th><th>ช่อง Na⁺ (มีประตู)</th><th>ช่อง K⁺ (มีประตู)</th></tr>
+        <tr><td>1</td><td>ระยะพัก (resting state)</td><td class="cell-close">ปิด</td><td class="cell-close">ปิด</td></tr>
+        <tr><td>2</td><td>depolarization (ต่ำกว่าเทรสโฮลด์)</td><td class="cell-open">เปิด</td><td class="cell-close">ปิด</td></tr>
+        <tr><td>3</td><td>depolarization</td><td class="cell-open">เปิด</td><td class="cell-close">ปิด</td></tr>
+        <tr><td>4</td><td>repolarization</td><td class="cell-close">ปิด</td><td class="cell-open">เปิด</td></tr>
+        <tr><td>5</td><td>hyperpolarization</td><td class="cell-close">ปิด</td><td class="cell-open">เปิด</td></tr>
+        <tr><td>6</td><td>ระยะพัก (resting state)</td><td class="cell-close">ปิด</td><td class="cell-close">ปิด</td></tr>
+      </table>
+      <p class="small" style="margin-top:10px">🔑 <b>ตรรกะที่ทำให้ไม่ต้องท่อง:</b> ขาขึ้น = <span class="hl-na">Na⁺ เปิด</span> (Na⁺ ไหลเข้า บวกขึ้น) · ขาลง = <span class="hl-k">K⁺ เปิด</span> (K⁺ ไหลออก ลบลง) · undershoot เพราะ <span class="hl-k">K⁺ ปิดช้า</span> เลยเลยต่ำกว่าพัก · กลับสู่พักด้วย Na⁺-K⁺ pump</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CONDUCTION ================= -->
+<section data-dot="การนำกระแส">
+  <div class="reveal"><span class="tag">ชีท 02</span>
+  <h2>การนำกระแสประสาท<span class="accent">ตามแอกซอน</span></h2>
+  <p class="lead">กระแสประสาทเป็นแบบ <b>all-or-none</b> (เกิดก็เกิดเต็มขนาด ไม่เกิดก็ไม่เกิด) และวิ่ง<b>ทิศทางเดียว</b></p></div>
+  <div class="grid g2 reveal d1" style="margin-top:20px">
+    <div class="card"><h3 class="k">ไม่มีเยื่อไมอีลิน → ต่อเนื่อง</h3>
+      <p class="small">continuous conduction — depolarization เกิดต่อ ๆ กันเป็นลูกโซ่ตลอดเส้น ช้ากว่า และต้องเพิ่มขนาดแอกซอนถึงจะเร็ว (พบในสัตว์ไม่มีกระดูกสันหลังบางชนิด แอกซอนใหญ่มาก)</p>
+    </div>
+    <div class="card"><h3 class="k">มีเยื่อไมอีลิน → กระโดด</h3>
+      <p class="small"><b>saltatory conduction</b> — กระแสกระโดดข้ามจากโนดออฟแรนเวียร์หนึ่งไปอีกโนด (เฉพาะที่โนดมีช่องไอออนหนาแน่น) <b>เร็วกว่า + ประหยัดพลังงาน</b> เพราะ Na⁺-K⁺ pump ทำงานเฉพาะที่โนด · ยิ่งโนดห่างยิ่งเร็ว</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SYNAPSE ================= -->
+<section data-dot="ไซแนปส์">
+  <div class="reveal"><span class="tag k">ชีท 02 · อัตนัยครอบคลุม</span>
+  <h2>ไซแนปส์ <span class="accent">(Synapse)</span></h2>
+  <p class="lead">รอยต่อส่งสัญญาณระหว่างเซลล์ 3 องค์ประกอบ: <b>เซลล์ก่อนไซแนปส์</b> → <b>ช่องไซแนปส์</b> (synaptic cleft) → <b>เซลล์หลังไซแนปส์</b></p></div>
+
+  <div class="grid g2 reveal d1" style="margin-top:20px">
+    <div class="card"><h3 class="k">ไซแนปส์ไฟฟ้า</h3>
+      <p class="small">ไอออนไหลตรงผ่าน <b>gap junction</b> — เร็วมาก แต่คุมทิศทางไม่ได้ พบที่ก้านสมอง, แผ่นเชื่อมเซลล์กล้ามเนื้อหัวใจ, ร่างแหประสาทของไนดาเรีย</p>
+    </div>
+    <div class="card"><h3 class="k">ไซแนปส์เคมี ⭐</h3>
+      <p class="small">ใช้ <b>สารสื่อประสาท</b> (neurotransmitter) — ช้ากว่าแต่<b>ควบคุมได้ดี</b> พบทั่วไปในสัตว์มีกระดูกสันหลัง (การทดลองหัวใจกบของ Otto Loewi)</p>
+    </div>
+  </div>
+
+  <div class="card reveal d2" style="margin-top:18px">
+    <h3 class="k">4 ขั้นตอนไซแนปส์เคมี</h3>
+    <div class="step"><div class="n">1</div><div>กระแสประสาทถึงปลายแอกซอน → กระตุ้นให้ <span class="chip ca">ช่อง Ca²⁺</span> เปิด → <b>Ca²⁺ ไหลเข้า</b>เซลล์</div></div>
+    <div class="step"><div class="n">2</div><div>Ca²⁺ กระตุ้นถุงสารสื่อประสาท (synaptic vesicle) ให้รวมกับเยื่อหุ้มเซลล์ → หลั่งสารออกสู่ช่องไซแนปส์แบบ <b>exocytosis</b></div></div>
+    <div class="step"><div class="n">3</div><div>สารสื่อประสาทจับ<b>ตัวรับ</b>บนเซลล์หลังไซแนปส์ → ทำให้เกิด <span class="hl-na">depolarization</span> (ถ้าเปิด Na⁺) หรือ <span class="hl-k">hyperpolarization</span> (ถ้าเปิด K⁺)</div></div>
+    <div class="step"><div class="n">4</div><div>เมื่อจบ สารถูก<b>เอนไซม์ทำลาย</b> (เช่น acetylcholine ถูก acetylcholinesterase) เพื่อไม่ให้ส่งกระแสมากเกินไป → นำกลับไปสร้างใหม่/กำจัดทางเลือด</div></div>
+    <p class="small" style="margin-top:8px">📍 สารสื่อประสาทหลั่งจาก<b>ปลายแอกซอนเท่านั้น</b> (เดนไดรต์ไม่มี) → นี่คือเหตุผลที่กระแสวิ่ง<b>ทิศทางเดียว</b></p>
+  </div>
+</section>
+
+<!-- ================= NEUROTRANSMITTERS ================= -->
+<section data-dot="สารสื่อประสาท">
+  <div class="reveal"><span class="tag pink">ชีท 02 · หน้า 93–108</span>
+  <h2>สารสื่อประสาท <span class="accent">& สารเคมี</span></h2>
+  <p class="lead">แบ่งตามองค์ประกอบเคมีได้ <b>4 กลุ่ม</b> + จำ “สารที่มีผลต่อการส่งกระแสประสาท” ที่ครูชอบออกปรนัย</p></div>
+
+  <div class="grid g4 reveal d1" style="margin-top:20px">
+    <div class="card"><h3 class="k" style="font-size:17px">1 · อะเซทิลโคลีน</h3><p class="small">พบมากสุดในสัตว์มีกระดูกสันหลัง · กระตุ้นกล้ามเนื้อลาย แต่<b>ยับยั้ง</b>กล้ามเนื้อหัวใจ · ถูกสลายด้วย acetylcholinesterase</p></div>
+    <div class="card"><h3 class="k" style="font-size:17px">2 · ไบโอเจนิกเอมีน</h3><p class="small">นอร์เอพิเนฟริน, เอพิเนฟริน, <b>โดพามีน</b>, <b>เซโรโทนิน</b> · เกี่ยวกับอารมณ์/การเรียนรู้/การนอน · ไม่สมดุล → พาร์กินสัน (ขาดโดพามีน) / จิตเภท (โดพามีนเกิน)</p></div>
+    <div class="card"><h3 class="k" style="font-size:17px">3 · นิวโรเปปไทด์</h3><p class="small">สายกรดอะมิโนสั้น ๆ เช่น substance P (ความเจ็บปวด), <b>บีตาเอนดอร์ฟิน</b> (ลดปวด เคลิ้มสุข)</p></div>
+    <div class="card"><h3 class="k" style="font-size:17px">4 · กรดแอมิโน</h3><p class="small">ไกลซีน, แอสปาร์เทต, <b>GABA</b> (ยับยั้ง), กลูตาเมต (กระตุ้น) · พบในระบบประสาทส่วนกลาง</p></div>
+  </div>
+
+  <div class="card reveal d2" style="margin-top:18px">
+    <h3 class="k">สารเคมี/สารพิษที่มีผลต่อการส่งกระแสประสาท (ออกปรนัยบ่อย)</h3>
+    <table class="key" style="font-size:14px">
+      <tr><th>สาร</th><th>กลไก</th><th>ผล</th></tr>
+      <tr><td style="color:var(--ink);font-family:Sarabun">โบทูลินัม (โบท็อกซ์)</td><td>ยับยั้งการหลั่ง acetylcholine</td><td>กล้ามเนื้อคลายตัว/ไม่หดตัว</td></tr>
+      <tr><td style="color:var(--ink);font-family:Sarabun">บาดทะยัก (tetanus)</td><td>ยับยั้งการหลั่งสารยับยั้ง (glycine/GABA)</td><td>กล้ามเนื้อชักเกร็ง</td></tr>
+      <tr><td style="color:var(--ink);font-family:Sarabun">ออร์กาโนฟอสเฟต</td><td>ยับยั้ง acetylcholinesterase → ACh คั่ง</td><td>กล้ามเนื้อเกร็ง ชักกระตุก</td></tr>
+      <tr><td style="color:var(--ink);font-family:Sarabun">ยาชา</td><td>ปิดช่อง Na⁺ → ไม่เกิด depolarization</td><td>ไม่รับรู้ความรู้สึก</td></tr>
+      <tr><td style="color:var(--ink);font-family:Sarabun">พิษปลาปักเป้า (tetrodotoxin)</td><td>ปิด fast Na⁺ channel</td><td>ไม่เกิด action potential</td></tr>
+      <tr><td style="color:var(--ink);font-family:Sarabun">พิษงูเห่า (α-neurotoxin)</td><td>จับตัวรับ ACh หลังไซแนปส์</td><td>กล้ามเนื้ออัมพาต</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ================= BRAIN ================= -->
+<section data-dot="สมอง">
+  <div class="reveal"><span class="tag k">อัตนัยข้อ 2 · ★ ออกแน่ · ชีท 03</span>
+  <h2>โครงสร้าง<span class="accent">และหน้าที่ของสมอง</span></h2>
+  <p class="lead">คลิกที่ส่วนต่าง ๆ ของสมอง (หรือปุ่มด้านขวา) เพื่อดูหน้าที่ — สมองแบ่ง <b>3 ส่วน</b>: ส่วนหน้า / ส่วนกลาง / ส่วนหลัง</p></div>
+
+  <div class="card reveal d1" style="margin-top:20px">
+    <div class="brainrow">
+      <div class="figwrap" style="margin:0">
+        <svg id="brainsvg" viewBox="0 0 520 400" width="100%" role="img" aria-label="สมองผ่าครึ่ง">
+          <!-- cerebrum -->
+          <path class="brain-part" data-part="cerebrum" fill="#1c3a5e" stroke="#4aa8ff" stroke-width="2"
+            d="M70,150 Q80,70 180,55 Q300,35 380,80 Q430,110 420,160 Q415,185 380,190 L150,190 Q90,190 70,150 Z"/>
+          <!-- gyri hint -->
+          <path d="M110,110 q20,-14 42,0 M170,90 q22,-14 46,2 M240,80 q22,-12 46,4 M310,95 q20,-10 40,6" fill="none" stroke="#4aa8ff" stroke-width="1.4" opacity=".5"/>
+          <!-- corpus callosum -->
+          <path fill="none" stroke="#8fe3ff" stroke-width="3" d="M150,175 Q250,150 360,172"/>
+          <!-- thalamus -->
+          <ellipse class="brain-part" data-part="thalamus" cx="250" cy="200" rx="40" ry="24" fill="#2a4a2f" stroke="#57e08a" stroke-width="2"/>
+          <!-- hypothalamus -->
+          <path class="brain-part" data-part="hypothalamus" fill="#4a2a2f" stroke="#ff5d8f" stroke-width="2"
+            d="M232,222 Q250,236 270,222 Q268,250 250,252 Q234,250 232,222 Z"/>
+          <!-- pituitary -->
+          <circle cx="250" cy="262" r="7" fill="#ff5d8f" opacity=".8"/>
+          <!-- midbrain -->
+          <path class="brain-part" data-part="midbrain" fill="#4a3a1a" stroke="#ffd23c" stroke-width="2"
+            d="M300,205 Q322,205 326,224 Q322,240 305,238 Q296,222 300,205 Z"/>
+          <!-- pons -->
+          <path class="brain-part" data-part="pons" fill="#3a2a4a" stroke="#b57cff" stroke-width="2"
+            d="M305,240 Q332,242 336,266 Q330,284 306,280 Q298,262 305,240 Z"/>
+          <!-- medulla -->
+          <path class="brain-part" data-part="medulla" fill="#2a3550" stroke="#38e1d6" stroke-width="2"
+            d="M300,282 Q322,284 322,312 L316,352 Q308,360 298,352 L294,300 Q296,286 300,282 Z"/>
+          <!-- cerebellum -->
+          <path class="brain-part" data-part="cerebellum" fill="#3a1f3a" stroke="#ff9d3c" stroke-width="2"
+            d="M355,205 Q430,200 455,250 Q465,300 410,320 Q360,330 345,290 Q340,245 355,205 Z"/>
+          <path d="M360,225 q40,-6 78,10 M352,255 q46,-4 92,12 M356,288 q40,0 78,14" fill="none" stroke="#ff9d3c" stroke-width="1.3" opacity=".55"/>
+          <!-- spinal cord -->
+          <rect x="296" y="356" width="20" height="34" rx="8" fill="#2a3550" stroke="#38e1d6" stroke-width="2"/>
+          <!-- labels -->
+          <g font-family="Kanit" font-size="12" font-weight="600">
+            <text x="150" y="120" fill="#8fd4ff">ซีรีบรัม</text>
+            <text x="205" y="203" fill="#9ff0b8">ทาลามัส</text>
+            <text x="150" y="245" fill="#ffa8c8">ไฮโพทาลามัส</text>
+            <text x="336" y="220" fill="#ffe08a">สมองส่วนกลาง</text>
+            <text x="346" y="266" fill="#d0b0ff">พอนส์</text>
+            <text x="326" y="330" fill="#8ff0e8">เมดัลลาฯ</text>
+            <text x="410" y="270" fill="#ffbe8a">เซรีเบลลัม</text>
+          </g>
+        </svg>
+      </div>
+      <div>
+        <div class="bfunc" id="bfunc">
+          <h3 id="bfName" style="color:var(--cyan)">แตะเลือกส่วนของสมอง</h3>
+          <p class="small" id="bfDesc">คลิกที่รูป หรือปุ่มด้านล่าง เพื่อดูหน้าที่ของสมองแต่ละส่วน แล้วลองปิดชื่อทายเองดู</p>
+        </div>
+        <div style="margin-top:12px">
+          <span class="bpill" data-part="cerebrum">ซีรีบรัม</span>
+          <span class="bpill" data-part="thalamus">ทาลามัส</span>
+          <span class="bpill" data-part="hypothalamus">ไฮโพทาลามัส</span>
+          <span class="bpill" data-part="midbrain">สมองส่วนกลาง</span>
+          <span class="bpill" data-part="cerebellum">เซรีเบลลัม</span>
+          <span class="bpill" data-part="pons">พอนส์</span>
+          <span class="bpill" data-part="medulla">เมดัลลาฯ</span>
+          <span class="bpill" data-part="olfactory">ออลแฟกทอรีบัลบ์</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g3 reveal d2" style="margin-top:18px">
+    <div class="card"><h3 class="k" style="color:var(--blue)">สมองส่วนหน้า (forebrain)</h3>
+      <p class="small">olfactory bulb · <b>cerebrum</b> · <b>thalamus</b> · <b>hypothalamus</b> · epithalamus (มีต่อมไพเนียล → เมลาโทนิน)</p></div>
+    <div class="card"><h3 class="k" style="color:var(--ca)">สมองส่วนกลาง (midbrain)</h3>
+      <p class="small">ศูนย์รีเฟล็กซ์การมองเห็น (superior colliculi) และการได้ยิน (inferior colliculi) · คุมการกลอกลูกตา · ในปลา/สัตว์สะเทินน้ำสะเทินบก = optic lobe</p></div>
+    <div class="card"><h3 class="k" style="color:var(--na)">สมองส่วนหลัง (hindbrain)</h3>
+      <p class="small"><b>cerebellum</b> (ทรงตัว/ประสานกล้ามเนื้อ) · <b>pons</b> (ทางผ่าน+ช่วยหายใจ) · <b>medulla oblongata</b> (หัวใจ/ความดัน/หายใจ) · รวมเป็น<b>ก้านสมอง</b> = midbrain+pons+medulla</p></div>
+  </div>
+</section>
+
+<!-- ================= BRAIN EVOLUTION ================= -->
+<section data-dot="วิวัฒนาการสมอง">
+  <div class="reveal"><span class="tag">ชีท 03</span>
+  <h2>วิวัฒนาการของสมอง<span class="accent">ในสัตว์มีกระดูกสันหลัง</span></h2>
+  <p class="lead">สมองแต่ละส่วนใหญ่-เล็กต่างกันตามวิถีชีวิต — หลักการจับใจความ</p></div>
+  <div class="grid g2 reveal d1" style="margin-top:20px">
+    <div class="card"><ul class="clean small">
+      <li><b>Olfactory bulb</b> — ใหญ่มากในปลา/สัตว์สะเทินน้ำสะเทินบก (ดมกลิ่นเก่ง) → เล็กลงในสัตว์ชั้นสูง เพราะ cerebrum ทำแทน</li>
+      <li><b>สมองส่วนกลาง</b> — เป็น optic lobe คุมการเห็นในปลา/สัตว์สะเทินน้ำสะเทินบก → สัตว์ชั้นสูงใช้ cerebrum แทน เหลือแค่ visual reflex</li>
+    </ul></div>
+    <div class="card"><ul class="clean small">
+      <li><b>Cerebrum</b> — ใหญ่+รอยหยักเยอะสุดในสัตว์เลี้ยงลูกด้วยนม (คิด/เรียนรู้/จำ) · รอยหยักลึก = sulcus, ตื้น = fissure</li>
+      <li><b>Cerebellum</b> — เจริญดีในนก/สัตว์ที่เคลื่อนไหวซับซ้อน (บิน 3 มิติ)</li>
+      <li><b>Medulla + pons</b> — ขนาดใกล้เคียงกันทุกกลุ่ม (คุมการดำรงชีวิตพื้นฐาน)</li>
+    </ul></div>
+  </div>
+</section>
+
+<!-- ================= MOCK EXAM ================= -->
+<section id="exam" data-dot="ข้อสอบจำลอง">
+  <div class="reveal exam-head">
+    <span class="tag pink">MOCK EXAM · ตรวจให้ทันที</span>
+    <h2 style="margin:.2em 0">ข้อสอบจำลอง 🧪</h2>
+    <p class="lead" style="margin:0 auto">ซ้อมให้เหมือนของจริง — 2 ข้ออัตนัย (กราฟ AP + ชี้สมอง) + ปรนัยทบทวน เลื่อนลงทำได้เลย</p>
+  </div>
+
+  <!-- WRITTEN Q1: AP graph -->
+  <div class="reveal">
+    <h3 class="k" style="font-size:24px;color:var(--na)">อัตนัย ① — กราฟ Action potential</h3>
+    <p class="small">จากกราฟด้านบน จุด 1–6 เลือกว่าเป็น<b>ระยะอะไร</b> และ<b>ช่อง Na⁺ / K⁺ (มีประตู) เปิดหรือปิด</b></p>
+    <div class="card">
+      <div class="apq-row" style="background:transparent;border:0;font-family:Kanit;font-weight:600;color:var(--muted)">
+        <div class="pt">จุด</div><div>ระยะ</div><div>Na⁺ gated</div><div>K⁺ gated</div>
+      </div>
+      <div id="apqBody"></div>
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:14px;flex-wrap:wrap">
+        <button class="btn" id="apqCheck">ตรวจคำตอบ</button>
+        <button class="btn ghost" id="apqReset">ล้าง</button>
+      </div>
+      <div class="scorebox" id="apqScore"></div>
+    </div>
+  </div>
+
+  <!-- WRITTEN Q2: brain matching -->
+  <div class="reveal" style="margin-top:34px">
+    <h3 class="k" style="font-size:24px;color:var(--k)">อัตนัย ② — จับคู่หน้าที่กับส่วนของสมอง</h3>
+    <p class="small">เลือกส่วนของสมองที่ทำหน้าที่ตามข้อความ (อิงแบบฝึกหัดท้ายบทข้อ 6)</p>
+    <div class="card">
+      <div id="matchBody"></div>
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:14px;flex-wrap:wrap">
+        <button class="btn" id="matchCheck">ตรวจคำตอบ</button>
+        <button class="btn ghost" id="matchReset">ล้าง</button>
+      </div>
+      <div class="scorebox" id="matchScore"></div>
+    </div>
+  </div>
+
+  <!-- MCQ -->
+  <div class="reveal" style="margin-top:34px">
+    <h3 class="k" style="font-size:24px;color:var(--blue)">ปรนัยทบทวน (คลิกเลือก ตรวจทันที)</h3>
+    <div id="mcqBody"></div>
+  </div>
+</section>
+
+<!-- ================= STUDY SCHEDULE ================= -->
+<section data-dot="ตารางติว">
+  <div class="reveal"><span class="tag na">แผนอ่านหนังสือ</span>
+  <h2>ตารางติว <span class="accent">23:10 → สอบ 10:00</span></h2>
+  <p class="lead">เน้น 2 ข้ออัตนัยก่อน มีพัก มี<b>นอน</b> (สำคัญมาก—สมองต้อง consolidate ความจำ) แล้วรีวิวเช้า</p></div>
+
+  <div class="grid g2 reveal d1" style="margin-top:20px">
+    <div class="card">
+      <div class="tl">
+        <div class="tl-item"><div class="tl-time">23:10 – 23:20</div><div class="tl-title">ตั้งหลัก (10 นาที)</div><div class="small">ดูหัวข้อ “แนวข้อสอบ” · เปิดเว็บนี้ค้างไว้</div></div>
+        <div class="tl-item"><div class="tl-time">23:20 – 00:05</div><div class="tl-title">★ Action potential (45 นาที)</div><div class="small">ศักย์พัก → Na-K pump → เลื่อนกราฟ 6 ระยะ ท่องตารางเปิด/ปิด</div></div>
+        <div class="tl-item"><div class="tl-time">00:05 – 00:15</div><div class="tl-title">พัก (10 นาที)</div><div class="small">ลุกเดิน ดื่มน้ำ พักตา</div></div>
+        <div class="tl-item"><div class="tl-time">00:15 – 00:55</div><div class="tl-title">★ สมอง (40 นาที)</div><div class="small">3 ส่วน + จับคู่หน้าที่ · ปิดชื่อทายเอง</div></div>
+        <div class="tl-item"><div class="tl-time">00:55 – 01:05</div><div class="tl-title">พัก (10 นาที)</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="tl">
+        <div class="tl-item"><div class="tl-time">01:05 – 01:35</div><div class="tl-title">ไซแนปส์ + สารสื่อประสาท (30 นาที)</div><div class="small">4 ขั้นตอน + 4 กลุ่มสาร + ตารางสารพิษ + ชนิดเซลล์ประสาท</div></div>
+        <div class="tl-item"><div class="tl-time">01:35 – 02:00</div><div class="tl-title">ทำข้อสอบจำลอง (25 นาที)</div><div class="small">AP + สมอง + ปรนัย · จดข้อที่ผิด</div></div>
+        <div class="tl-item"><div class="tl-time">02:00 – 02:15</div><div class="tl-title">รีวิวจุดพลาด (15 นาที)</div></div>
+        <div class="tl-item sleep"><div class="tl-time">02:15 – 08:00</div><div class="tl-title">😴 นอน (~5.5–6 ชม.)</div><div class="small">ห้ามข้าม! ความจำจะแน่นขึ้นหลังนอน</div></div>
+        <div class="tl-item"><div class="tl-time">08:00 – 08:45</div><div class="tl-title">รีวิวเช้า (45 นาที)</div><div class="small">วาดกราฟ AP จากความจำ + เขียนชื่อสมองเปล่า ๆ + ทำข้อสอบจำลองซ้ำ</div></div>
+        <div class="tl-item"><div class="tl-time">08:45 – 09:15</div><div class="tl-title">สแกนสรุป + เตรียมตัว</div></div>
+        <div class="tl-item exam"><div class="tl-time">~10:00</div><div class="tl-title">🎯 สอบ — ลุยเลย!</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="big">พร้อมสอบแล้ว 💪</div>
+  <p style="max-width:640px;margin:14px auto 0">ถ้าวาดกราฟ AP 6 ระยะ + บอกช่อง Na⁺/K⁺ ได้ และชี้สมอง 3 ส่วนพร้อมหน้าที่ได้ = เก็บ 2 ข้ออัตนัยครบ แล้วปรนัยจะตามมาเอง</p>
+  <p class="note">เนื้อหาอ้างอิงจากชีท ว33241 (ครูขวัญชนก) + หนังสือเรียน สสวท. ชีววิทยา ม.6 เล่ม 5 · ปรับให้อยู่ในระดับชั้นเรียน · ทำขึ้นเพื่อติวสอบส่วนตัว</p>
+</footer>
+
+<script>
+/* ============ progress + reveal + dots ============ */
+const prog=document.getElementById('prog');
+const secs=[...document.querySelectorAll('section')];
+const dotsNav=document.getElementById('dots');
+secs.forEach((s,i)=>{const a=document.createElement('a');a.href='#';a.title=s.dataset.dot||'';
+  a.addEventListener('click',e=>{e.preventDefault();s.scrollIntoView({behavior:'smooth'})});dotsNav.appendChild(a);});
+const dotEls=[...dotsNav.children];
+
+const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis')})},{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+function onScroll(){
+  const h=document.documentElement;
+  const p=h.scrollTop/(h.scrollHeight-h.clientHeight);
+  prog.style.width=(p*100)+'%';
+  // active dot
+  let idx=0,mid=innerHeight/2;
+  secs.forEach((s,i)=>{const r=s.getBoundingClientRect();if(r.top<=mid&&r.bottom>=mid)idx=i;});
+  dotEls.forEach((d,i)=>d.classList.toggle('on',i===idx));
+}
+addEventListener('scroll',onScroll,{passive:true});addEventListener('resize',onScroll);onScroll();
+
+/* ============ hero neural canvas ============ */
+(function(){
+  const c=document.getElementById('net'),x=c.getContext('2d');let W,H,pts;
+  function rs(){W=c.width=c.offsetWidth;H=c.height=c.offsetHeight;
+    pts=Array.from({length:Math.min(70,Math.floor(W/22))},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4}));}
+  rs();addEventListener('resize',rs);
+  function loop(){x.clearRect(0,0,W,H);
+    for(const p of pts){p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;}
+    for(let i=0;i<pts.length;i++){for(let j=i+1;j<pts.length;j++){
+      const a=pts[i],b=pts[j],d=Math.hypot(a.x-b.x,a.y-b.y);
+      if(d<130){x.strokeStyle='rgba(56,225,214,'+(.12*(1-d/130))+')';x.lineWidth=1;x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke();}}}
+    for(const p of pts){x.fillStyle='rgba(120,190,255,.7)';x.beginPath();x.arc(p.x,p.y,1.8,0,7);x.fill();}
+    requestAnimationFrame(loop);}
+  loop();
+})();
+
+/* ============ Action potential scroll driver ============ */
+(function(){
+  const wrap=document.getElementById('apwrap');
+  const dot=document.getElementById('apdot');
+  const curve=document.getElementById('apcurve');
+  const naLed=document.getElementById('naLed'),kLed=document.getElementById('kLed');
+  const plName=document.getElementById('plName'),plDesc=document.getElementById('plDesc');
+  const marks=[...document.querySelectorAll('#apmarks > g')];
+  const len=curve.getTotalLength();
+  curve.style.strokeDasharray=len;curve.style.strokeDashoffset=len;
+
+  // 6 phases with colors + channel state + text
+  const phases=[
+    {name:'① ระยะพัก (resting state)',col:'#38e1d6',na:0,k:0,
+     desc:'ช่อง Na⁺ และ K⁺ แบบมีประตูปิดทั้งคู่ ศักย์ไฟฟ้าคงที่ ~ −70 mV (มีเพียงการรั่วผ่าน leak channel)'},
+    {name:'② depolarization (ต่ำกว่าเทรสโฮลด์)',col:'#ff9d3c',na:1,k:0,
+     desc:'สิ่งเร้ากระตุ้น → ช่อง Na⁺ เริ่มเปิดบางส่วน Na⁺ ไหลเข้าเล็กน้อย ศักย์ไฟฟ้าสูงขึ้นแต่ยังไม่ถึง −55 mV (graded potential)'},
+    {name:'③ depolarization',col:'#ff9d3c',na:1,k:0,
+     desc:'ถึงเทรสโฮลด์ −55 mV → ช่อง Na⁺ เปิดมาก Na⁺ ไหลเข้าแบบ positive feedback ศักย์พุ่งขึ้น ~ +50 mV · K⁺ ยังปิด'},
+    {name:'④ repolarization',col:'#b57cff',na:0,k:1,
+     desc:'ช่อง Na⁺ ปิด (inactivation) หยุด Na⁺ เข้า · ช่อง K⁺ เปิด K⁺ ไหลออก ศักย์ไฟฟ้าลดกลับลง'},
+    {name:'⑤ hyperpolarization (undershoot)',col:'#b57cff',na:0,k:1,
+     desc:'ช่อง K⁺ ปิดช้า K⁺ จึงออกมากเกิน ศักย์ลดต่ำกว่าระยะพัก · Na⁺-K⁺ pump ดึงกลับสู่สมดุล'},
+    {name:'⑥ ระยะพัก (resting state)',col:'#38e1d6',na:0,k:0,
+     desc:'ช่องมีประตูปิดทั้งคู่อีกครั้ง Na⁺-K⁺ pump รักษาสมดุล กลับสู่ −70 mV พร้อมรับกระตุ้นรอบใหม่'}
+  ];
+  function setLed(el,open){el.textContent=open?'เปิด':'ปิด';el.className='ledbox '+(open?'led-open':'led-close');}
+
+  function tick(){
+    const r=wrap.getBoundingClientRect();
+    const total=wrap.offsetHeight-innerHeight;
+    let p=(-r.top)/total;p=Math.max(0,Math.min(1,p));
+    // draw curve
+    curve.style.strokeDashoffset=len*(1-p);
+    // move dot along path
+    const pt=curve.getPointAtLength(len*p);
+    dot.setAttribute('cx',pt.x);dot.setAttribute('cy',pt.y);
+    // phase index
+    let i=Math.min(phases.length-1,Math.floor(p*phases.length + 1e-6));
+    if(p>=1)i=phases.length-1;
+    const ph=phases[i];
+    plName.textContent=ph.name;plName.style.color=ph.col;
+    plDesc.textContent=ph.desc;
+    dot.setAttribute('fill',ph.col);
+    setLed(naLed,ph.na);setLed(kLed,ph.k);
+    // highlight active marker
+    marks.forEach((m,mi)=>{m.style.opacity=(mi===i)?'1':'.4';m.querySelector('circle').setAttribute('r',mi===i?'16':'13');});
+  }
+  addEventListener('scroll',tick,{passive:true});addEventListener('resize',tick);tick();
+})();
+
+/* ============ Brain interactive ============ */
+(function(){
+  const data={
+    cerebrum:{n:'ซีรีบรัม (cerebrum)',d:'สมองส่วนหน้า · ใหญ่สุด — ศูนย์การเรียนรู้ ความคิด ความจำ, ควบคุมการเคลื่อนไหวของร่างกาย (frontal lobe), และเป็นศูนย์รับความรู้สึก: การเห็น (occipital) การได้ยิน/ดมกลิ่น (temporal) การสัมผัส (parietal)'},
+    thalamus:{n:'ทาลามัส (thalamus)',d:'สมองส่วนหน้า — เป็น “ทางผ่าน/สถานีถ่ายทอด” กระแสประสาทจากหน่วยรับความรู้สึกไปยังซีรีบรัม (ยกเว้นการดมกลิ่นที่เข้า olfactory bulb ตรง)'},
+    hypothalamus:{n:'ไฮโพทาลามัส (hypothalamus)',d:'สมองส่วนหน้า — ควบคุมอุณหภูมิร่างกาย, ความหิว/กระหาย, นาฬิกาชีวิต, การเต้นหัวใจ/ความดัน และสร้างฮอร์โมนควบคุมต่อมใต้สมองส่วนหน้า'},
+    midbrain:{n:'สมองส่วนกลาง (midbrain)',d:'ศูนย์รีเฟล็กซ์การมองเห็น (superior colliculi) และการได้ยิน (inferior colliculi), ควบคุมการเคลื่อนไหวของลูกตา · ในปลา/สัตว์สะเทินน้ำสะเทินบก = optic lobe คุมการเห็นโดยตรง'},
+    cerebellum:{n:'เซรีเบลลัม (cerebellum)',d:'สมองส่วนหลัง — ควบคุมการทรงตัวของร่างกาย และประสานการเคลื่อนไหวของกล้ามเนื้อให้ราบรื่นเที่ยงตรง (รับข้อมูลจาก semicircular canal ในหู) · แอลกอฮอล์กระทบส่วนนี้ทำให้ทรงตัวไม่ได้'},
+    pons:{n:'พอนส์ (pons)',d:'สมองส่วนหลัง — เป็นทางผ่านกระแสประสาทระหว่างเซรีเบลลัมกับส่วนอื่น, ช่วย medulla ควบคุมการหายใจ และเกี่ยวกับการเคลื่อนไหวใบหน้า/เคี้ยวอาหาร'},
+    medulla:{n:'เมดัลลาออบลองกาตา (medulla oblongata)',d:'สมองส่วนหลัง (ท้ายสุด ต่อไขสันหลัง) — ควบคุมการเต้นของหัวใจ ความดันเลือด การหายใจ การจาม กลืน อาเจียน หลั่งน้ำลาย'},
+    olfactory:{n:'ออลแฟกทอรีบัลบ์ (olfactory bulb)',d:'สมองส่วนหน้า (หน้าสุด ใต้ cerebrum) — เกี่ยวกับการดมกลิ่น · ใหญ่มากในปลา/กบ, ในคนไม่ค่อยเจริญ'}
+  };
+  const bfName=document.getElementById('bfName'),bfDesc=document.getElementById('bfDesc');
+  function show(k){const o=data[k];if(!o)return;bfName.textContent=o.n;bfDesc.textContent=o.d;}
+  document.querySelectorAll('[data-part]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const k=el.dataset.part;show(k);
+      document.querySelectorAll('.bpill').forEach(p=>p.classList.toggle('on',p.dataset.part===k));
+    });
+  });
+})();
+
+/* ============ MOCK: AP question ============ */
+(function(){
+  const answers=[
+    {ph:'resting state',na:'ปิด',k:'ปิด'},
+    {ph:'depolarization (ต่ำกว่าเทรสโฮลด์)',na:'เปิด',k:'ปิด'},
+    {ph:'depolarization',na:'เปิด',k:'ปิด'},
+    {ph:'repolarization',na:'ปิด',k:'เปิด'},
+    {ph:'hyperpolarization',na:'ปิด',k:'เปิด'},
+    {ph:'resting state',na:'ปิด',k:'ปิด'}
+  ];
+  const phaseOpts=['— เลือก —','resting state','depolarization (ต่ำกว่าเทรสโฮลด์)','depolarization','repolarization','hyperpolarization'];
+  const body=document.getElementById('apqBody');
+  answers.forEach((a,i)=>{
+    const row=document.createElement('div');row.className='apq-row';
+    row.innerHTML=`<div class="pt">${i+1}</div>
+      <select class="sel" data-t="ph">${phaseOpts.map(o=>`<option>${o}</option>`).join('')}</select>
+      <select class="sel" data-t="na"><option>— Na⁺ —</option><option>เปิด</option><option>ปิด</option></select>
+      <select class="sel" data-t="k"><option>— K⁺ —</option><option>เปิด</option><option>ปิด</option></select>`;
+    body.appendChild(row);
+  });
+  document.getElementById('apqCheck').addEventListener('click',()=>{
+    const rows=[...body.children];let s=0;
+    rows.forEach((row,i)=>{
+      const sels=row.querySelectorAll('select');const a=answers[i];const map={ph:a.ph,na:a.na,k:a.k};
+      sels.forEach(sel=>{const t=sel.dataset.t;const ok=sel.value===map[t];
+        sel.classList.toggle('ok',ok);sel.classList.toggle('no',!ok);if(ok)s++;});
+    });
+    const tot=answers.length*3;
+    document.getElementById('apqScore').innerHTML=`ได้ ${s}/${tot} ช่อง ${s===tot?'🎉 เพอร์เฟกต์!':'— ดูช่องแดงแล้วแก้'}`;
+    document.getElementById('apqScore').style.color=s===tot?'var(--good)':'var(--na)';
+  });
+  document.getElementById('apqReset').addEventListener('click',()=>{
+    body.querySelectorAll('select').forEach(s=>{s.selectedIndex=0;s.classList.remove('ok','no')});
+    document.getElementById('apqScore').textContent='';
+  });
+})();
+
+/* ============ MOCK: brain matching ============ */
+(function(){
+  const qs=[
+    {t:'สร้างฮอร์โมนควบคุมการหลั่งฮอร์โมนจากต่อมใต้สมองส่วนหน้า',a:'ไฮโพทาลามัส'},
+    {t:'ควบคุมการเต้นของหัวใจ และความดันเลือด',a:'เมดัลลาออบลองกาตา'},
+    {t:'ควบคุมการหายใจในภาวะปกติ',a:'เมดัลลาออบลองกาตา'},
+    {t:'ควบคุมการทรงตัวของร่างกาย',a:'เซรีเบลลัม'},
+    {t:'ทางผ่านของกระแสประสาทเกี่ยวกับการดมกลิ่น',a:'ออลแฟกทอรีบัลบ์'},
+    {t:'ควบคุมการเคลื่อนไหวของร่างกาย',a:'ซีรีบรัม'},
+    {t:'ควบคุมอุณหภูมิของร่างกาย',a:'ไฮโพทาลามัส'},
+    {t:'ศูนย์กลางการรับรส การมองเห็น การได้ยิน และการดมกลิ่น',a:'ซีรีบรัม'},
+    {t:'ทางผ่านของกระแสประสาทจากหน่วยรับความรู้สึกไปยังซีรีบรัม',a:'ทาลามัส'},
+    {t:'ควบคุมการเคลื่อนไหวของลูกตา',a:'สมองส่วนกลาง'}
+  ];
+  const opts=['— เลือก —','ซีรีบรัม','ทาลามัส','ไฮโพทาลามัส','สมองส่วนกลาง','เซรีเบลลัม','พอนส์','เมดัลลาออบลองกาตา','ออลแฟกทอรีบัลบ์'];
+  const body=document.getElementById('matchBody');
+  qs.forEach((q,i)=>{
+    const r=document.createElement('div');r.className='matchrow';
+    r.innerHTML=`<div><b>${i+1}.</b> ${q.t}</div>
+      <select class="bq-input">${opts.map(o=>`<option>${o}</option>`).join('')}</select>`;
+    body.appendChild(r);
+  });
+  document.getElementById('matchCheck').addEventListener('click',()=>{
+    const rows=[...body.children];let s=0;
+    rows.forEach((r,i)=>{const sel=r.querySelector('select');const ok=sel.value===qs[i].a;
+      sel.classList.toggle('ok',ok);sel.classList.toggle('no',!ok);if(ok)s++;});
+    const el=document.getElementById('matchScore');
+    el.innerHTML=`ได้ ${s}/${qs.length} ข้อ ${s===qs.length?'🎉 ครบ!':'— แก้ข้อแดง'}`;
+    el.style.color=s===qs.length?'var(--good)':'var(--k)';
+  });
+  document.getElementById('matchReset').addEventListener('click',()=>{
+    body.querySelectorAll('select').forEach(s=>{s.selectedIndex=0;s.classList.remove('ok','no')});
+    document.getElementById('matchScore').textContent='';
+  });
+})();
+
+/* ============ MOCK: MCQ ============ */
+(function(){
+  const mcq=[
+    {q:'ศักย์ไฟฟ้าเยื่อเซลล์ระยะพักของเซลล์ประสาทมีค่าประมาณเท่าใด',
+     o:['+50 mV','0 mV','−55 mV','−70 mV'],c:3,
+     e:'ระยะพักประมาณ −70 mV (อยู่ระหว่าง −60 ถึง −80 mV) ภายในเซลล์เป็นลบเมื่อเทียบกับภายนอก'},
+    {q:'Na⁺-K⁺ pump ลำเลียงไอออนในสัดส่วนใด และแบบใด',
+     o:['3Na⁺ เข้า : 2K⁺ ออก แบบ active transport','3Na⁺ ออก : 2K⁺ เข้า แบบ active transport','2Na⁺ ออก : 3K⁺ เข้า แบบ facilitated diffusion','3Na⁺ ออก : 2K⁺ เข้า แบบ passive'],c:1,
+     e:'ปั๊ม Na⁺ ออกนอกเซลล์ : K⁺ เข้าในเซลล์ = 3:2 ใช้ ATP (active transport) เพื่อรักษาศักย์ไฟฟ้าระยะพัก'},
+    {q:'ช่วง depolarization (ขาขึ้นของกราฟ) เกิดจากข้อใด',
+     o:['K⁺ ไหลออกผ่านช่อง K⁺ ที่เปิด','Na⁺ ไหลเข้าผ่านช่อง Na⁺ ที่เปิด','Cl⁻ ไหลเข้าเซลล์','Ca²⁺ ไหลออกจากเซลล์'],c:1,
+     e:'เมื่อถึงเทรสโฮลด์ ช่อง Na⁺ ที่มีประตูเปิด Na⁺ ไหลเข้า ทำให้ภายในเป็นบวกมากขึ้น = depolarization'},
+    {q:'ระยะ hyperpolarization (undershoot) เกิดเพราะเหตุใด',
+     o:['ช่อง Na⁺ เปิดค้าง','ช่อง K⁺ ปิดช้า K⁺ จึงออกมากเกิน','Na⁺-K⁺ pump หยุดทำงาน','Ca²⁺ ไหลเข้ามาก'],c:1,
+     e:'ช่อง K⁺ ปิดช้ากว่าที่ควร K⁺ จึงออกมากเกินไป ศักย์ไฟฟ้าเลยลดต่ำกว่าระยะพักชั่วขณะ'},
+    {q:'การนำกระแสประสาทแบบกระโดด (saltatory conduction) เกิดที่แอกซอนแบบใด และมีข้อดีอย่างไร',
+     o:['ไม่มีไมอีลิน — ช้าแต่ประหยัดพลังงาน','มีไมอีลิน — เร็วขึ้นและประหยัดพลังงาน','ไม่มีไมอีลิน — เร็วเพราะแอกซอนใหญ่','มีไมอีลิน — ช้าแต่แม่นยำ'],c:1,
+     e:'แอกซอนมีเยื่อไมอีลิน กระแสกระโดดข้ามโนดออฟแรนเวียร์ เร็วขึ้นและใช้พลังงานน้อยกว่า'},
+    {q:'ในไซแนปส์เคมี ไอออนใดกระตุ้นให้ถุงสารสื่อประสาทหลั่งสารออกมา',
+     o:['Na⁺','K⁺','Ca²⁺','Cl⁻'],c:2,
+     e:'เมื่อกระแสถึงปลายแอกซอน ช่อง Ca²⁺ เปิด Ca²⁺ ไหลเข้า กระตุ้น synaptic vesicle หลั่งสารแบบ exocytosis'},
+    {q:'สารสื่อประสาทชนิดใดที่เมื่อขาดในสมองทำให้เกิดโรคพาร์กินสัน',
+     o:['อะเซทิลโคลีน','โดพามีน','GABA','เซโรโทนิน'],c:1,
+     e:'พาร์กินสันเกิดจากเซลล์ที่สร้างโดพามีนเสื่อม/ตาย → ขาดโดพามีน → ควบคุมการเคลื่อนไหวผิดปกติ'},
+    {q:'สมองส่วนใดเป็นทางผ่านของกระแสประสาทรับความรู้สึกไปยังซีรีบรัม (ยกเว้นการดมกลิ่น)',
+     o:['ไฮโพทาลามัส','เซรีเบลลัม','ทาลามัส','พอนส์'],c:2,
+     e:'ทาลามัสเป็นสถานีถ่ายทอดสัญญาณรับความรู้สึกเกือบทั้งหมดไปยังซีรีบรัม ยกเว้นการดมกลิ่น'},
+    {q:'ผู้ที่ดื่มแอลกอฮอล์มากแล้วเดินเซ ทรงตัวไม่ได้ แสดงว่าแอลกอฮอล์กระทบสมองส่วนใด',
+     o:['ซีรีบรัม','เซรีเบลลัม','เมดัลลาออบลองกาตา','ทาลามัส'],c:1,
+     e:'เซรีเบลลัมควบคุมการทรงตัวและประสานการเคลื่อนไหว เมื่อถูกกระทบจึงทรงตัวไม่ได้'},
+    {q:'ถ้าเนื้อเยื่อประสาทมีแต่เซลล์ประสาท ไม่มีเซลล์เกลีย ผลจะเป็นอย่างไร',
+     o:['ทำงานได้ปกติทุกอย่าง','ทำงานไม่ปกติ เพราะขาดการค้ำจุน หล่อเลี้ยง และสร้างไมอีลิน','นำกระแสได้เร็วขึ้น','สร้างสารสื่อประสาทมากขึ้น'],c:1,
+     e:'เซลล์เกลียค้ำจุน ป้องกัน หล่อเลี้ยง สร้างไมอีลิน และรักษาสมดุลไอออน — ขาดไปแล้วระบบประสาททำงานปกติไม่ได้'}
+  ];
+  const body=document.getElementById('mcqBody');
+  mcq.forEach((m,i)=>{
+    const d=document.createElement('div');d.className='mcq';
+    d.innerHTML=`<div class="qh">${i+1}. ${m.q}</div>`;
+    m.o.forEach((o,oi)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;
+      b.addEventListener('click',()=>{
+        [...d.querySelectorAll('.opt')].forEach(x=>x.classList.add('disabled'));
+        if(oi===m.c){b.classList.add('correct');}
+        else{b.classList.add('wrong');d.querySelectorAll('.opt')[m.c].classList.add('correct');}
+        d.querySelector('.expl').classList.add('show');
+      });
+      d.appendChild(b);});
+    const ex=document.createElement('div');ex.className='expl';ex.innerHTML='<b>เฉลย:</b> '+m.e;d.appendChild(ex);
+    body.appendChild(d);
+  });
+})();
+</script>
+</body>
+</html>

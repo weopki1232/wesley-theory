@@ -67,5 +67,5 @@ for i, pg in enumerate(r.pages):
 
 ## Related
 - Image prep for these docs (background removal, glare fix on scanned certificates): see the `image-prep-rembg-glare` memory — clean cutouts with rembg `u2net_human_seg` + alpha matting, gamma/contrast recipe for over-glowy scans.
-- Deliverables archive to `E:\Projects\<project>\` per the user's decluttering habit.
-- Requires `pip install pypdf pymupdf` (both already installed in system Python).
+- Deliverables archive to `<ARCHIVE_DRIVE>\<project>\` per the user's decluttering habit.
+- Requires `pip install pypdf pymupdf` — install them before first use; they are not part of a stock Python.

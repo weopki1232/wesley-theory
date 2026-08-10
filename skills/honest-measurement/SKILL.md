@@ -32,6 +32,15 @@ true.
 Not for: statistical analysis of collected data, user studies, or anything where
 you cannot re-run the thing yourself.
 
+**Also not for questions whose answer is structural.** When the mechanism is known
+and the effect is order-of-magnitude — an O(n²) scan rewritten as O(n), a 40 MB
+asset swapped for a 40 KB one, a network round-trip deleted outright — reason about
+it, say plainly that you reasoned rather than measured, and move on. Standing up a
+four-round harness to confirm arithmetic burns the user's time, and a skill that
+does that on the obvious cases gets switched off before the non-obvious one arrives.
+Measure when the mechanism is uncertain, when the expected effect is small enough to
+sit inside run-to-run spread, or when something has already surprised you.
+
 ---
 
 ## The seven rules, in the order they bite

@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>From Nothing to Mind — a neuron becomes a brain</title>
+<!--
+  Scroll-driven biology explainer in the dark-motion house style.
+  A single point-cloud MORPHS across keyframes as you scroll:
+     scatter (nothing) -> neuron -> network of neurons -> brain
+  New in v2 (sourced from matthayom6-Shewa.pdf, ว33241):
+   - Glia & myelin taught BEFORE the action potential (spawn + connect diagram).
+   - Action potential now has an animated voltage-vs-time GRAPH, then a ZOOM into
+     the cell membrane showing the Na+/K+ pump + voltage-gated channels.
+   - The brain is FARMED part by part: hindbrain -> midbrain -> forebrain core
+     -> cerebrum lobes each fly in from the network and light up, then unify.
+  New in v3:
+   - Action potential is now SCROLL-SCRUBBED: one shared apProg (from the AP
+     section's scroll position) drives BOTH the 3D axon's red pulse AND the 2D
+     graph tracer, locked in step. Park = frozen mid-spike. (see drawAPFrame)
+   - Graph rebuilt: clip-reveal curve, gradient area fill, gridlines, colored
+     phase bands + refractory bracket, live Na+/K+ flux badges, threshold/peak
+     callouts that light on crossing.
+   - Membrane rebuilt: gradient phospholipid bilayer + hourglass channel proteins
+     with a real central pore; ions travel THROUGH the pore; Na/K pump cycles.
+  New in v4 (glia & membrane become 3D dot moments; graph scroll fixed):
+   - AP graph now completes by the time its card is roughly centred (apProg maths
+     in onScroll), so the whole spike is readable while the axon is still framed.
+   - GLIA: a second point cloud (gliaPoints) — 4 coloured cells condense out of
+     the dust mid-air and send dot-strand connectors to the neuron, over the glia
+     station only. Rotation locked to the main cloud. SVG card -> captions.
+   - MEMBRANE: the main cloud morphs neuron <-> cloudMembrane (a bilayer built in
+     the same dot style) across MEM_START..MEM_END, camera dives in then back out,
+     spin unwinds (spinKeep) so the bilayer faces you. SVG card -> captions.
+  New in v5 (slow, scrubbable action potential):
+   - The AP section is now TALL + pinned (.ap-tall/.ap-sticky, height --ap-scroll,
+     default 300vh). apProg = how far you've scrolled through it, so the dot walks
+     the graph resting->spike->resting over ~200vh and the axon pulse tracks it.
+   - To stop that extra height from shifting every later keyframe, the 3D timeline
+     runs on a "virtual" g (physToVirtG): each section = one equal virtual slot, so
+     a physically tall section advances the scene no faster than a normal one.
+   - Reveal IntersectionObserver switched to rootMargin (middle-band) so a >100vh
+     section still triggers its reveals. MEM window + camera re-anchored past the
+     AP slot so the scene HOLDS on the neuron while you scrub the spike.
+  New in v6 (graph stops hiding the neuron):
+   - The AP voltage graph was a big opaque card sitting dead-centre over the axon,
+     so the travelling pulse vanished behind it. It's now a translucent glass HUD
+     (#apgraph background alpha + backdrop-blur) parked in the TOP-RIGHT, above the
+     axon's low diagonal path, with a lighter area-fill so dots read through it.
+   - AP camera pulled back (camKeys 0.27/0.365 z: 8/7.6 -> 9.6/9.2) so the WHOLE
+     cell — soma, dendrites, axon, terminals — frames while the pulse runs, instead
+     of a zoomed axon slice. Mobile keeps the graph full-width stacked under the copy.
+  New in v7 (built part-by-part; glia interviewed; membrane comes alive):
+   - Sections went 12 → 15. The NEURON now assembles one component per section
+     (soma → dendrites → axon → terminals), each flying in from the dust in its
+     own colour then unifying to teal (writeNeuronAssembly + neuronPart tags,
+     mirrors writeBrainAssembly). Camera PANS (camKeys.lx) to keep each new part
+     centred as the cell grows leftward-to-right.
+   - GLIA is now a tall pinned scrub with FIVE cells incl. the Schwann cell
+     (CNS oligodendrocyte vs PNS Schwann). Each condenses + connects in its own
+     scrub band (gliaProg → updateGlia staged by contiguous point-blocks); the
+     side list lights row-by-row and a "now forming" card names the active cell +
+     the ability it gives the neuron (drawGliaFrame / gliaMeta).
+   - MEMBRANE timing fixed: memAmt is now a TRAPEZOID (quick zoom-in, HOLD, quick
+     zoom-out) so the bilayer is already formed + face-on while you read the copy
+     (old bug: text up but still a neuron). The Na⁺/K⁺ ions now MOVE — tagged in
+     the membrane cloud (ionFlag/ionDir/ionPhase) and streamed through the pores
+     by gTime in writeMembrane (Na⁺ in / K⁺ out).
+   - Every hardcoded keyframe (KEYS, camKeys, REGION_META rs/re, UNIFY, MEM window,
+     applyMyelin/applySynapse/updateGlia windows) retuned for the 15-slot layout.
+  New in v8 (slower, calmer, robust pacing + a living membrane):
+   - "Everything too fast" fixed at the ROOT: content sections got a .station.tall
+     variant (block + sticky .panel, min-height --tall ~200vh). Since physToVirtG
+     makes every section one EQUAL virtual slot regardless of height, this ONLY
+     slows each beat + pins its copy — no keyframe moved. Future sections inherit
+     the same runway, so adding topics can never re-introduce the rush.
+   - MEMBRANE: cloud widened (HX 6.5→10.5) with 5 embedded proteins so you see a
+     BROAD sheet (matches the reference diagram) instead of a cramped slice; camera
+     sits back (z 4.0→6.8). The whole bilayer now BREATHES (per-point sin drift in
+     writeMembrane) so it's not a freeze-frame; ions slowed (0.16→0.075). memAmt
+     hold widened (.514–.560) and the section is extra-tall (--tall:240vh) so the
+     zoom-in is unhurried and it holds face-on for most of the scroll.
+   - FINALE: the last section (already entirely at g=1, brain assembled + unified)
+     became .station.finale — a 200vh block: one full screen of the finished brain
+     ALONE (slowly spinning, "keep scrolling" cue) then the closing copy scrolls up
+     into its own centred screen. Kept as ONE section so no virtual slot is added
+     and no keyframe shifts.
+  New in v9 (region-coloured finale + the "brain → body" chapter):
+   - TIMELINE DECOUPLED from section COUNT: physToVirtG now divides morph-g by a
+     FIXED G_DEN=14 (the original 15-section span), not (nSec-1). The first 15
+     sections keep their exact g; APPENDED chapters push g past 1.0 and shift NO
+     earlier keyframe. HUD switched to true page-progress (0–100%) since g can now
+     exceed 1. This is the permanent fix for "adding topics rushes everything".
+   - FINALE is now REGION-COLOURED: writeBrainAssembly's unify brightens each
+     region toward white by 25% (lights up) instead of washing to one pale blue,
+     so the held brain shows frontal/parietal/temporal/occipital/core/brainstem/
+     cerebellum in their own colours.
+   - NEW CHAPTER "brain → body" (4 sections @ g>1): Spinal Cord, Paired Nerves,
+     The Body, close("You"). cloudBody = brain shrunk to the head (keeps region
+     colour) + a spinal cord + symmetric paired nerve strands (12 cranial-ish + 31
+     spinal-ish, warm gold) + a faint humanoid silhouette; writeBrainToBody morphs
+     cloudBrain→cloudBody staged by BODY_PARTS windows; camKeys pull back to z28 &
+     pan down; spin damps to face-forward (bodyAmt). Teaches CNS vs PNS, afferent/
+     efferent, "what part of the body each nerve reaches".
+   - MEMBRANE transition slowed again: section --tall 240→340vh and memAmt ramps
+     widened (rise .521/fall .553) so the dive-in and exit each get ~2× the scroll.
+  New in v10 (anatomy REWORK — brain stays whole; realistic upper-body):
+   - BUG FIX: the old "brain → body" STOLE the brain's dots to build the body, so
+     the brain hollowed out. Now the brain stays COMPLETE — writeBrainAnatomy just
+     shrinks + lifts it into the head as ONE rigid unit (scale about brainC → HEAD).
+   - A SEPARATE dot-layer (anatPoints, NA=16000, like the glia layer) condenses the
+     rest around it: skull shell + neck, vertebral column (22 discs) + spinal cord,
+     9 bilateral CRANIAL nerve pairs (brainstem→eyes/ears/face/vagus), CERVICAL (blue,
+     8 pairs→arms) + THORACIC (pink, 12 pairs→ribs) SPINAL nerve pairs, heart+lungs
+     (vagus targets), and a faint upper-body silhouette (skull/neck/torso/arms shells).
+     Nerves are THIN + PAIRED + coloured BY REGION GROUP (buildAnatomy/updateAnatomy,
+     staged by ANAT_PARTS windows). Upper body only — no legs.
+   - INTERACTION: the anatomy is fully DRAG-ROTATABLE (pinned "Explore" section).
+     render() rotation split into spinSup (kill auto-spin in membrane+anatomy) vs
+     dragSup (kill drag only in membrane) so anatomy stays turntable-draggable.
+   - Chapter re-scripted to 5 sections: Spinal Cord & Spine, Cranial Nerves, Spinal
+     Nerves & Organs, Explore (drag), You. camKeys reframed for the upright figure.
+  Rendering: three.js (r128, vendored locally) point cloud, one BufferGeometry
+  whose positions are lerped between equal-count target clouds by scroll progress.
+  Diagrams are zero-dep inline SVG. Everything else (cursor, split-text, reveals,
+  grain, HUD) is zero-dep, from the dark-motion-site skill.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06070a; --ink:#eef1f6; --muted:#8b91a0; --line:rgba(255,255,255,.09);
+  --accent:#66f0c0;         /* bioluminescent teal — reads as neural */
+  --accent2:#6ea8ff;        /* signal blue */
+  --hot:#ff5e7a;            /* action-potential red */
+  --na:#ff6a6a;            /* sodium */
+  --k:#6ea8ff;             /* potassium */
+  --f-disp:"Familjen Grotesk",sans-serif; --f-body:"Hanken Grotesk",sans-serif; --f-mono:"Space Mono",monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+@media (hover:hover) and (pointer:fine){ body,a{cursor:none} }
+
+/* ===== fixed 3D stage ===== */
+#stage{position:fixed;inset:0;z-index:0}
+#glcanvas{display:block;width:100%;height:100%}
+.stage-veil{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 42%,transparent 48%,rgba(4,5,8,.82) 100%)}
+
+/* ===== grain ===== */
+.grain{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ===== custom cursor ===== */
+.cur-ring,.cur-dot{position:fixed;top:0;left:0;z-index:90;pointer-events:none;border-radius:50%;
+  transform:translate(-50%,-50%);will-change:transform}
+.cur-ring{width:34px;height:34px;border:1.5px solid rgba(255,255,255,.5);transition:border-color .25s,background .25s}
+.cur-dot{width:5px;height:5px;background:var(--accent)}
+.cur-ring.hot{border-color:var(--accent);background:rgba(102,240,192,.08)}
+@media (hover:none),(pointer:coarse){ .cur-ring,.cur-dot{display:none} body{cursor:auto} }
+
+/* ===== fixed HUD ===== */
+.hud{position:fixed;z-index:40;pointer-events:none;font-family:var(--f-mono);font-size:11px;
+  letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+.hud.tl{top:22px;left:26px;display:flex;gap:11px;align-items:center}
+.hud.tl .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px var(--accent)}
+.hud.tr{top:22px;right:26px}
+.hud.tr b{color:var(--ink)}
+.hud.br{bottom:20px;right:26px}
+/* progress rail */
+.rail{position:fixed;left:26px;top:50%;transform:translateY(-50%);z-index:40;
+  display:flex;flex-direction:column;gap:0;pointer-events:none}
+.rail .seg{display:flex;align-items:center;gap:12px;height:52px;position:relative}
+.rail .seg i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.2);flex:none;transition:.35s var(--ease)}
+.rail .seg.on i{background:var(--accent);box-shadow:0 0 12px var(--accent);transform:scale(1.4)}
+.rail .seg span{font-family:var(--f-mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  color:transparent;transition:.35s var(--ease);white-space:nowrap}
+.rail .seg.on span{color:var(--muted)}
+.rail .seg::before{content:"";position:absolute;left:4px;top:31px;width:1px;height:21px;background:var(--line)}
+.rail .seg:last-child::before{display:none}
+@media(max-width:860px){.rail{display:none}}
+
+/* progress bar */
+.pbar{position:fixed;left:0;top:0;height:2px;width:100vw;transform:scaleX(0);transform-origin:0 50%;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));z-index:41;box-shadow:0 0 10px var(--accent);will-change:transform}
+
+/* ===== scroll sections ===== */
+main{position:relative;z-index:10}
+.station{min-height:100vh;display:flex;align-items:center;padding:0 8vw;position:relative}
+.station .panel{max-width:540px}
+.station.right{justify-content:flex-end}
+.station.right .panel{text-align:right}
+.station.center{justify-content:center;text-align:center}
+.station.center .panel{max-width:820px}
+/* two-column station: copy + diagram */
+.station.split2{justify-content:space-between;gap:4vw}
+.station.split2 .panel{max-width:400px;flex:none}
+.station.split2.right{flex-direction:row-reverse}
+.diagwrap{width:min(50vw,560px);display:flex;flex-direction:column;gap:20px}
+@media(max-width:900px){
+  .station.split2,.station.split2.right{flex-direction:column;justify-content:center;padding-top:88px;padding-bottom:40px}
+  .station.split2 .panel{max-width:560px}.diagwrap{width:100%;max-width:560px}
+}
+/* ===== TALL PINNED CONTENT SECTION (global pacing control) =====
+   Any .station.tall becomes a tall block whose .panel STICKS for the whole
+   section, so the copy stays put and readable while that beat's 3D morph
+   scrubs slowly past. Because physToVirtG makes every .station one EQUAL
+   virtual slot regardless of height, adding this height only SLOWS the beat —
+   it never shifts a downstream keyframe. That's the robustness guarantee:
+   new sections/topics added later get their own runway and can't rush the
+   existing ones. Tune the pace with --tall. */
+.station.tall{display:block;min-height:var(--tall,200vh);padding:0 8vw}
+.station.tall>.panel{position:sticky;top:0;min-height:100vh;
+  display:flex;flex-direction:column;justify-content:center}
+.station.tall.right>.panel{margin-left:auto}
+.station.tall.center>.panel{margin-left:auto;margin-right:auto}
+@media(max-width:900px){ .station.tall{--tall:170vh} }
+
+/* ===== FINALE: hold on the finished brain, THEN reveal the closing text =====
+   The last section already sits entirely at g=1 (brain fully assembled + unified),
+   so we keep it as ONE section (no new virtual slot → no keyframe shift) and just
+   lay it out tall: a full screen of brain alone (slowly spinning) first, then the
+   closing copy scrolls up into its own centred screen. */
+.station.finale{display:block;min-height:200vh;padding:0 8vw}
+.finale-hold{height:100vh;display:flex;align-items:flex-end;justify-content:center;padding-bottom:9vh}
+.finale-cue{font-family:var(--f-mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--muted);opacity:.85;display:flex;flex-direction:column;align-items:center;gap:10px}
+.finale-cue::after{content:"";width:1px;height:30px;background:linear-gradient(var(--accent),transparent)}
+.station.finale>.panel{min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+  margin-left:auto;margin-right:auto}
+
+/* tall pinned station: the action potential gets a long scroll to scrub through.
+   The inner .ap-sticky pins for the section's height while apProg scrubs slowly. */
+.station.ap-tall{display:block;min-height:var(--ap-scroll,300vh);padding:0}
+.ap-sticky{position:sticky;top:0;height:100vh;display:flex;align-items:center;
+  justify-content:space-between;gap:4vw;padding:0 8vw}
+.ap-sticky .panel{max-width:400px;flex:none}
+/* graph rides in the TOP-RIGHT, clear of the axon that runs low across the stage,
+   and is a translucent glass HUD so the travelling pulse stays visible behind it. */
+.ap-sticky .diagwrap{width:min(40vw,430px);align-self:flex-start;margin-top:8vh}
+#apgraph{
+  background:
+    radial-gradient(120% 100% at 0% 0%,rgba(102,240,192,.05),transparent 46%),
+    linear-gradient(180deg,rgba(13,17,25,.44),rgba(6,8,12,.56));
+  backdrop-filter:blur(4px) saturate(1.04);
+  box-shadow:0 24px 58px -34px rgba(0,0,0,.72), inset 0 1px 0 rgba(255,255,255,.05);}
+.ap-hint{margin-top:16px;font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:9px}
+.ap-hint::before{content:"";width:16px;height:1px;background:var(--accent)}
+@media(max-width:900px){
+  .ap-sticky{flex-direction:column;justify-content:center;gap:24px;padding-top:80px;padding-bottom:32px}
+  .ap-sticky .panel{max-width:560px}
+  .ap-sticky .diagwrap{width:100%;max-width:560px;align-self:auto;margin-top:0}
+}
+/* glia staged list: rows are dim until their cell condenses in, then light up */
+.glia-list li{opacity:.3;transition:opacity .45s var(--ease),transform .45s var(--ease);transform:translateX(-6px)}
+.right .glia-list li{transform:translateX(6px)}
+.glia-list li.lit{opacity:1;transform:none}
+.glia-list li.active .pt{color:var(--accent)}
+.glia-list li.active .pk.dot::before{box-shadow:0 0 14px var(--c,var(--accent));transform:scale(1.25)}
+.glia-list li.active .pk.dot::before{transition:.3s var(--ease)}
+/* "now forming" readout card */
+.glia-active{min-height:88px}
+.glia-active .ga-name{font-family:var(--f-disp);font-weight:600;font-size:21px;letter-spacing:-.01em;transition:color .3s}
+.glia-active .ga-role{color:var(--muted);font-size:12.5px;font-family:var(--f-mono);letter-spacing:.06em;text-transform:uppercase;margin-top:5px}
+.glia-active .ga-give{margin-top:11px;color:#cdd3df;font-size:13.5px;line-height:1.5}
+.ga-count{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.ga-count #gaNum{color:var(--accent);font-weight:700}
+/* soft scrim behind copy so it stays legible over the particle field */
+.station .panel{position:relative}
+.station .panel::before{content:"";position:absolute;inset:-46px -74px;z-index:-1;pointer-events:none;
+  background:radial-gradient(88% 82% at 16% 50%,rgba(6,7,10,.92),rgba(6,7,10,.52) 50%,transparent 78%)}
+.station.right .panel::before{background:radial-gradient(88% 82% at 84% 50%,rgba(6,7,10,.92),rgba(6,7,10,.52) 50%,transparent 78%)}
+.station.center .panel::before{background:radial-gradient(74% 88% at 50% 50%,rgba(6,7,10,.94),rgba(6,7,10,.55) 56%,transparent 82%)}
+
+.k{font-family:var(--f-mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--accent);
+  display:inline-flex;align-items:center;gap:10px;margin-bottom:20px}
+.k::before{content:"";width:26px;height:1px;background:var(--accent);display:inline-block}
+.right .k{flex-direction:row-reverse}
+
+h1{font-family:var(--f-disp);font-weight:700;letter-spacing:-.04em;line-height:.94;
+  font-size:clamp(44px,7.5vw,104px)}
+h1 .ol{color:transparent;-webkit-text-stroke:1.3px rgba(255,255,255,.5)}
+h2{font-family:var(--f-disp);font-weight:600;letter-spacing:-.025em;line-height:1.0;
+  font-size:clamp(28px,4.3vw,56px)}
+.lead{margin-top:18px;color:#c3c8d2;font-size:clamp(15px,1.35vw,17px)}
+.desc{margin-top:14px;color:var(--muted);font-size:14.5px}
+
+/* labeled part list */
+.parts{margin-top:24px;display:flex;flex-direction:column;gap:0}
+.parts li{list-style:none;display:flex;gap:14px;padding:12px 0;border-top:1px solid var(--line);align-items:baseline}
+.parts li:last-child{border-bottom:1px solid var(--line)}
+.right .parts li{flex-direction:row-reverse}
+.parts .pk{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--accent);min-width:98px;flex:none}
+.parts .pk.dot{position:relative;padding-left:16px}
+.parts .pk.dot::before{content:"";position:absolute;left:0;top:5px;width:9px;height:9px;border-radius:50%;
+  background:var(--c,var(--accent));box-shadow:0 0 9px var(--c,var(--accent))}
+.parts .pt{font-family:var(--f-disp);font-weight:600;font-size:17px;letter-spacing:-.01em}
+.parts .pd{color:var(--muted);font-size:13.5px;margin-left:auto;max-width:52%}
+.right .parts .pd{margin-left:0;margin-right:auto;text-align:right}
+@media(max-width:640px){.parts li{flex-wrap:wrap}.parts .pd{margin:0;max-width:100%}}
+
+/* stat chips */
+.chips{margin-top:26px;display:flex;gap:14px;flex-wrap:wrap}
+.right .chips{justify-content:flex-end}
+.center .chips{justify-content:center}
+.chip{border:1px solid var(--line);border-radius:14px;padding:15px 19px;background:rgba(255,255,255,.02);
+  backdrop-filter:blur(3px)}
+.chip .n{font-family:var(--f-disp);font-weight:700;font-size:clamp(24px,2.7vw,36px);letter-spacing:-.03em;line-height:1}
+.chip .l{color:var(--muted);font-size:11.5px;margin-top:6px;font-family:var(--f-mono);letter-spacing:.08em;text-transform:uppercase}
+
+/* ===== diagram cards ===== */
+.card{position:relative;border:1px solid var(--line);border-radius:18px;
+  background:
+    radial-gradient(130% 100% at 0% 0%,rgba(102,240,192,.06),transparent 44%),
+    linear-gradient(180deg,rgba(22,26,36,.80),rgba(9,11,16,.88));
+  backdrop-filter:blur(9px);padding:18px 20px 16px;overflow:hidden;
+  box-shadow:0 30px 70px -34px rgba(0,0,0,.92), inset 0 1px 0 rgba(255,255,255,.05)}
+.card::after{content:"";position:absolute;left:14px;right:14px;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(102,240,192,.55),transparent);opacity:.75}
+.card .ct{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:9px}
+.card .ct::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 8px var(--accent);flex:none}
+.card svg{display:block;width:100%;height:auto}
+.card .cn{margin-top:11px;color:var(--muted);font-size:12.5px;line-height:1.55}
+.card .cn b{color:var(--ink);font-weight:600}
+
+/* svg shared text */
+.slab{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.04em;fill:#aeb6c6;text-transform:uppercase}
+.stag{font-family:var(--f-disp);font-weight:600;font-size:12px;fill:#eef1f6}
+.smut{font-family:var(--f-body);font-size:10px;fill:#8b91a0}
+
+/* --- glia spawn diagram --- */
+.glia{opacity:0;transform:scale(.5);transform-box:fill-box;transform-origin:center}
+.card.in .glia{animation:spawn .7s var(--ease) forwards}
+.card.in .glia.g1{animation-delay:.15s}.card.in .glia.g2{animation-delay:.45s}
+.card.in .glia.g3{animation-delay:.75s}.card.in .glia.g4{animation-delay:1.05s}
+.card.in .glia.g5{animation-delay:1.35s}
+@keyframes spawn{to{opacity:1;transform:scale(1)}}
+.connector{stroke:rgba(255,255,255,.22);stroke-width:1;stroke-dasharray:3 3;opacity:0;transition:opacity .5s .3s}
+.card.in .connector{opacity:1}
+.wrap-arc{fill:none;stroke:#c7b6ff;stroke-width:2.4;stroke-linecap:round;
+  stroke-dasharray:120;stroke-dashoffset:120;transition:stroke-dashoffset 1.1s var(--ease) .35s}
+.card.in .wrap-arc{stroke-dashoffset:0}
+
+/* --- action-potential graph (scroll-scrubbed) --- */
+.apaxis{stroke:rgba(255,255,255,.30);stroke-width:1.2}
+.apgrid line{stroke:rgba(255,255,255,.07);stroke-width:1}
+.apthresh{stroke:#ff9d5c;stroke-width:1;stroke-dasharray:4 4;opacity:.5}
+.apband{opacity:.055;transition:opacity .3s var(--ease)}
+.apband.active{opacity:.22}
+.apband.depo{fill:var(--na)} .apband.repo{fill:var(--k)} .apband.hyper{fill:#c7b6ff}
+.apfill{fill:url(#apArea)}
+.apcurve{fill:none;stroke:var(--accent);stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round;
+  filter:drop-shadow(0 0 5px rgba(102,240,192,.55))}
+.aptracer{fill:#fff;filter:drop-shadow(0 0 8px var(--accent))}
+.phase{font-family:var(--f-mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;fill:#5c6272;
+  transition:fill .25s}
+.phase.lit{fill:var(--ink)}
+.phase[data-ph="depo"].lit{fill:var(--na)}
+.phase[data-ph="repo"].lit{fill:var(--k)}
+.phase[data-ph="hyper"].lit{fill:#c7b6ff}
+.apcallout{opacity:0;transition:opacity .3s var(--ease)}
+.apcallout.lit{opacity:1}
+.apcallout circle{fill:none;stroke:rgba(255,255,255,.6);stroke-width:1.4}
+.apcallout.lit circle{fill:var(--accent);stroke:var(--accent);filter:drop-shadow(0 0 6px var(--accent))}
+.apnote{font-family:var(--f-mono);font-size:8.5px;letter-spacing:.03em;fill:#cfd6e6}
+.apflux{opacity:0;transition:opacity .25s var(--ease)}
+.apflux.lit{opacity:1}
+.apflux .fluxlab{font-family:var(--f-mono);font-size:9.5px;font-weight:700;letter-spacing:.03em}
+.apflux.na .fluxlab{fill:var(--na)} .apflux.k .fluxlab{fill:var(--k)}
+.aprefract{fill:none;stroke:rgba(255,255,255,.28);stroke-width:1}
+.slab.refract{fill:#7a8296}
+
+/* --- membrane / channel diagram --- */
+.lh{fill:url(#lipidHead);stroke:rgba(174,233,255,.28);stroke-width:.5}
+.lt{stroke:#39435a;stroke-width:1.6;stroke-linecap:round}
+.cwall{fill:url(#protFill);stroke:rgba(190,210,245,.55);stroke-width:1.1}
+.cpore{stroke:rgba(180,200,240,.45);stroke-width:1;stroke-dasharray:2 3}
+.clab{font-family:var(--f-disp);font-weight:600;font-size:10px;fill:#cfd6e6;text-anchor:middle}
+.mion{transform-box:fill-box}
+.mion circle{r:6.5}
+.mion text{font-family:var(--f-mono);font-size:7.5px;font-weight:700;text-anchor:middle;dominant-baseline:central;fill:#0a0c11}
+.mion.na circle{fill:var(--na);filter:drop-shadow(0 0 4px rgba(255,106,106,.7))}
+.mion.k circle{fill:var(--k);filter:drop-shadow(0 0 4px rgba(110,168,255,.7))}
+.mion.dn{animation:mIonDn 3s linear infinite}
+.mion.up{animation:mIonUp 3s linear infinite}
+@keyframes mIonDn{0%{transform:translateY(0);opacity:0}10%{opacity:1}82%{opacity:1}100%{transform:translateY(104px);opacity:0}}
+@keyframes mIonUp{0%{transform:translateY(0);opacity:0}10%{opacity:1}82%{opacity:1}100%{transform:translateY(-104px);opacity:0}}
+
+/* split-text reveal */
+.split .w{display:inline-block;overflow:hidden;vertical-align:top}
+.split .i{display:inline-block;transform:translateY(115%);transition:transform .9s var(--ease)}
+.split.in .i{transform:translateY(0)}
+/* generic reveal */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.rv.in{opacity:1;transform:none}
+.rv.d1{transition-delay:.08s}.rv.d2{transition-delay:.16s}.rv.d3{transition-delay:.24s}.rv.d4{transition-delay:.32s}
+
+/* scroll cue */
+.cue{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:40;
+  font-family:var(--f-mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);
+  display:flex;flex-direction:column;align-items:center;gap:8px;transition:opacity .5s}
+.cue .bar{width:1px;height:34px;background:linear-gradient(var(--accent),transparent);position:relative;overflow:hidden}
+.cue .bar::after{content:"";position:absolute;left:0;top:-34px;width:1px;height:34px;background:var(--accent);
+  animation:cued 1.8s var(--ease) infinite}
+@keyframes cued{to{top:34px}}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+  .split .i{transform:none!important}.rv{opacity:1;transform:none}
+  .apcurve{stroke-dashoffset:0}.glia{opacity:1;transform:none}.wrap-arc{stroke-dashoffset:0}
+}
+</style>
+</head>
+<body>
+
+<div id="stage"><canvas id="glcanvas"></canvas></div>
+<div class="stage-veil"></div>
+<div class="grain"></div>
+<div class="cur-ring" id="ring"></div>
+<div class="cur-dot" id="dot"></div>
+
+<!-- HUD -->
+<div class="hud tl"><span class="dot"></span><span>From Nothing to Mind</span></div>
+<div class="hud tr"><b id="pctnum">00</b> / 100</div>
+<div class="hud br" id="stagename">Void</div>
+<div class="pbar" id="pbar"></div>
+<nav class="rail" id="rail"></nav>
+<div class="cue" id="cue"><span>Scroll</span><span class="bar"></span></div>
+
+<main id="main">
+
+  <!-- 0 · VOID → SPARK -->
+  <section class="station center" data-stage="0" data-name="Void">
+    <div class="panel">
+      <p class="k rv">Biology · Nervous System · ว33241</p>
+      <h1 class="split">FROM NOTHING<br>TO <span class="ol">MIND</span></h1>
+      <p class="lead rv d1">Scroll, and scattered matter draws itself into a single nerve cell, wraps it in glia, fires a signal, then builds itself into the organ reading this sentence, one brain region at a time.</p>
+      <p class="desc rv d2">A cell that fires. A network that thinks. Keep scrolling.</p>
+    </div>
+  </section>
+
+  <!-- 1 · NEURON BUILD — part 1/4 · SOMA -->
+  <section class="station tall" data-stage="1" data-name="Soma">
+    <div class="panel">
+      <p class="k rv">The unit of the mind · part 1 of 4</p>
+      <h2 class="split">First, the soma</h2>
+      <p class="lead rv d1">The brain's ~86 billion neurons are all built from the same four parts. Watch one assemble itself from the dust, piece by piece — starting with the cell body.</p>
+      <ul class="parts">
+        <li class="rv"><span class="pk dot" style="--c:#66f0c0">Soma</span><span class="pt">Decide</span><span class="pd">The cell body. It holds the nucleus and sums every incoming signal to decide whether the neuron will fire.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 1 · NEURON BUILD — part 2/4 · DENDRITES -->
+  <section class="station tall right" data-stage="1" data-name="Dendrites">
+    <div class="panel">
+      <p class="k rv">A single neuron · part 2 of 4</p>
+      <h2 class="split">Then the dendrites</h2>
+      <p class="lead rv d1">Branched antennae grow out of the soma. They are the neuron's ears — reaching out to collect signals from thousands of other cells at once.</p>
+      <ul class="parts">
+        <li class="rv"><span class="pk dot" style="--c:#6ea8ff">Dendrites</span><span class="pt">Receive</span><span class="pd">The more they branch, the more connections the neuron can listen to.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 1 · NEURON BUILD — part 3/4 · AXON -->
+  <section class="station tall" data-stage="1" data-name="Axon">
+    <div class="panel">
+      <p class="k rv">A single neuron · part 3 of 4</p>
+      <h2 class="split">Next, the axon</h2>
+      <p class="lead rv d1">A single long fibre shoots out from the soma. This is the output cable that carries the neuron's signal away — in some cells nearly a metre long.</p>
+      <ul class="parts">
+        <li class="rv"><span class="pk dot" style="--c:#c7b6ff">Axon</span><span class="pt">Transmit</span><span class="pd">One per neuron. Soon it will be wrapped in myelin so the signal can travel fast.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 1 · NEURON BUILD — part 4/4 · TERMINALS -->
+  <section class="station tall right" data-stage="1" data-name="Terminals">
+    <div class="panel">
+      <p class="k rv">A single neuron · part 4 of 4</p>
+      <h2 class="split">And the terminals</h2>
+      <p class="lead rv d1">The axon splits into branched endings — the neuron's mouth, where it hands its signal to the next cell. The unit is complete.</p>
+      <ul class="parts">
+        <li class="rv"><span class="pk dot" style="--c:#7fe0a0">Terminals</span><span class="pt">Send</span><span class="pd">Each ending forms a synapse onto another neuron, a muscle, or a gland.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 2 · GLIA — tall pinned: 5 support cells condense & wire in one by one -->
+  <section class="station ap-tall glia-tall" data-stage="2" data-name="Glia &amp; Myelin">
+   <div class="ap-sticky">
+    <div class="panel">
+      <p class="k rv">The support that makes it work</p>
+      <h2 class="split">Glia gather round</h2>
+      <p class="lead rv d1">A neuron never works alone. Scroll, and five kinds of support cell condense out of the dust one at a time — each sends a strand to the neuron and gives it a new ability. There is roughly one glial cell for every neuron.</p>
+      <ul class="parts glia-list">
+        <li data-cell="0"><span class="pk dot" style="--c:#66f0c0">Astrocyte</span><span class="pt">Sustain</span><span class="pd">Feeds the neuron, tunes its synapses, builds the blood–brain barrier. <b>Gives it</b> a fed, stable home.</span></li>
+        <li data-cell="1"><span class="pk dot" style="--c:#ff9d5c">Microglia</span><span class="pt">Defend</span><span class="pd">The brain's immune cell: patrols, clears debris, prunes weak synapses. <b>Gives it</b> protection and clean wiring.</span></li>
+        <li data-cell="2"><span class="pk dot" style="--c:#c7b6ff">Oligodendrocyte</span><span class="pt">Insulate · CNS</span><span class="pd">Wraps axons in the brain and spinal cord with fatty myelin. <b>Gives it</b> fast, node-to-node signals.</span></li>
+        <li data-cell="3"><span class="pk dot" style="--c:#ff88b0">Schwann cell</span><span class="pt">Insulate · PNS</span><span class="pd">Same myelin job, but out in the body's nerves — one cell per segment. <b>Gives it</b> fast signals in peripheral nerves.</span></li>
+        <li data-cell="4"><span class="pk dot" style="--c:#6ea8ff">Ependymal</span><span class="pt">Line</span><span class="pd">Lines the fluid-filled ventricles and circulates cerebrospinal fluid. <b>Gives it</b> a cushioned, bathed environment.</span></li>
+      </ul>
+      <p class="ap-hint rv d3">Scroll to reveal each ↓</p>
+    </div>
+    <div class="diagwrap">
+      <div class="card rv d1" id="gliacard">
+        <div class="ct">Now forming</div>
+        <div class="glia-active" id="gliaActive">
+          <div class="ga-name" id="gaName">Drifting dust…</div>
+          <div class="ga-role" id="gaRole">scroll to condense the first glial cell</div>
+          <div class="ga-give" id="gaGive"></div>
+        </div>
+        <div class="ga-count"><span id="gaNum">0</span> / 5 glial cells connected</div>
+      </div>
+    </div>
+   </div>
+  </section>
+
+  <!-- 3 · ACTION POTENTIAL — tall pinned section: scrub the dot resting→spike→resting -->
+  <section class="station ap-tall" data-stage="3" data-name="Action Potential">
+   <div class="ap-sticky">
+    <div class="panel">
+      <p class="k rv">The signal fires</p>
+      <h2 class="split">The action potential</h2>
+      <p class="lead rv d1">Keep scrolling to move the dot along the graph yourself — from rest, through the spike, and back to rest. The 3D neuron fires in step: watch the pulse crawl down the axon as you go.</p>
+      <p class="desc rv d2">It is all-or-none. Below −55 mV nothing happens; cross it and the voltage flips fully, then resets.</p>
+      <div class="chips">
+        <div class="chip rv"><div class="n" data-count="-70" data-suffix=" mV">0</div><div class="l">Resting</div></div>
+        <div class="chip rv d1"><div class="n" data-count="-55" data-suffix=" mV">0</div><div class="l">Threshold</div></div>
+        <div class="chip rv d2"><div class="n" data-count="50" data-prefix="+" data-suffix=" mV">0</div><div class="l">Peak</div></div>
+      </div>
+      <p class="ap-hint rv d3">Scroll to scrub ↓</p>
+    </div>
+    <div class="diagwrap">
+      <div class="card rv d1" id="apgraph">
+        <div class="ct">Membrane potential vs. time</div>
+        <svg viewBox="0 0 480 260" role="img" aria-label="Action potential voltage over time, scrubbed by scroll">
+          <defs>
+            <linearGradient id="apArea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#66f0c0" stop-opacity=".24"/>
+              <stop offset="1" stop-color="#66f0c0" stop-opacity="0"/>
+            </linearGradient>
+            <clipPath id="apReveal"><rect id="apRevealRect" x="0" y="0" width="0" height="260"/></clipPath>
+          </defs>
+          <!-- phase shading bands -->
+          <g class="apbands">
+            <rect class="apband depo"  x="126" y="34" width="52"  height="176"/>
+            <rect class="apband repo"  x="178" y="34" width="54"  height="176"/>
+            <rect class="apband hyper" x="232" y="34" width="108" height="176"/>
+          </g>
+          <!-- gridlines -->
+          <g class="apgrid">
+            <line x1="60" y1="40"  x2="452" y2="40"/>
+            <line x1="60" y1="110" x2="452" y2="110"/>
+            <line x1="60" y1="210" x2="452" y2="210"/>
+          </g>
+          <!-- axes + scale -->
+          <line class="apaxis" x1="60" y1="30" x2="60" y2="212"/>
+          <line class="apaxis" x1="60" y1="210" x2="456" y2="210"/>
+          <text x="54" y="44"  class="slab" text-anchor="end">+50</text>
+          <text x="54" y="114" class="slab" text-anchor="end">0</text>
+          <text x="54" y="192" class="slab" text-anchor="end">−55</text>
+          <text x="54" y="214" class="slab" text-anchor="end">−70</text>
+          <text x="12" y="128" class="slab" transform="rotate(-90 12 128)" text-anchor="middle">mV</text>
+          <text x="452" y="226" class="slab" text-anchor="end">time →</text>
+          <!-- threshold guide -->
+          <line class="apthresh" x1="60" y1="189" x2="452" y2="189"/>
+          <!-- curve + area, revealed left-to-right by scroll -->
+          <g clip-path="url(#apReveal)">
+            <path id="apfill" class="apfill"
+              d="M64,210 L126,210 C138,210 150,150 162,96 C168,64 173,40 178,40 C184,40 189,72 197,122 C207,182 216,224 232,224 C252,224 264,220 278,216 C300,210 320,210 340,210 L452,210 Z"/>
+            <path id="apcurve" class="apcurve"
+              d="M64,210 L126,210 C138,210 150,150 162,96 C168,64 173,40 178,40 C184,40 189,72 197,122 C207,182 216,224 232,224 C252,224 264,220 278,216 C300,210 320,210 340,210 L452,210"/>
+          </g>
+          <!-- ion-flux badges -->
+          <g id="fluxNa" class="apflux na"><text x="150" y="150" class="fluxlab">Na⁺ ▼ influx</text></g>
+          <g id="fluxK"  class="apflux k"><text x="236" y="86"  class="fluxlab">K⁺ ▲ efflux</text></g>
+          <!-- threshold + peak callouts -->
+          <g id="apThr" class="apcallout">
+            <circle cx="144" cy="189" r="4"/><text x="150" y="184" class="apnote">threshold −55</text>
+          </g>
+          <g id="apPeak" class="apcallout">
+            <circle cx="178" cy="40" r="4.5"/><text x="188" y="38" class="apnote">peak +50</text>
+          </g>
+          <!-- phase labels -->
+          <text class="phase" data-ph="depo"  x="152" y="26">depolar.</text>
+          <text class="phase" data-ph="repo"  x="205" y="26">repolar.</text>
+          <text class="phase" data-ph="hyper" x="286" y="26">hyperpolar.</text>
+          <!-- refractory bracket -->
+          <path class="aprefract" d="M126,224 L126,229 L300,229 L300,224"/>
+          <text x="213" y="242" class="slab refract" text-anchor="middle">refractory period</text>
+          <!-- tracer -->
+          <circle id="aptracer" class="aptracer" r="5" cx="64" cy="210"/>
+        </svg>
+        <div class="cn"><b>Depolarization:</b> voltage-gated <span style="color:var(--na)">Na⁺</span> channels open, Na⁺ floods in. <b>Repolarization:</b> Na⁺ channels close, <span style="color:var(--k)">K⁺</span> channels open and K⁺ leaves, restoring rest.</div>
+      </div>
+    </div>
+   </div>
+  </section>
+
+  <!-- 4 · MEMBRANE — camera dives in, the neuron's dots reform into the bilayer -->
+  <section class="station tall right" data-stage="3" data-name="The Membrane" style="--tall:340vh">
+    <div class="panel">
+      <p class="k rv">Zoom in · the cell membrane</p>
+      <h2 class="split">Inside the membrane</h2>
+      <p class="lead rv d1">Push all the way in and the axon's dots rearrange into its wall of fat — the phospholipid bilayer: two beaded rows of heads with tails tucked inward, studded with protein channels. Watch the <span style="color:var(--na)">Na⁺</span> and <span style="color:var(--k)">K⁺</span> ions stream through those channels, across the membrane.</p>
+      <ul class="parts">
+        <li class="rv"><span class="pk dot" style="--c:#8fb8ff">Head rows</span><span class="pt">Face water</span><span class="pd">Two layers of phosphate heads line the outside and inside surfaces.</span></li>
+        <li class="rv d1"><span class="pk dot" style="--c:#cfd6e6">Channels</span><span class="pt">Cross</span><span class="pd">Hourglass proteins with a central pore let specific ions through.</span></li>
+        <li class="rv d2"><span class="pk dot" style="--c:#ff6a6a">Na⁺/K⁺ pump</span><span class="pt">Charge it</span><span class="pd">Burns ATP: 3 Na⁺ out for every 2 K⁺ in — holds the inside at −70 mV, loaded to fire.</span></li>
+      </ul>
+      <p class="desc rv d3">→ the bilayer holds face-on while the ions flow; scroll on and it reforms back into the whole neuron.</p>
+    </div>
+  </section>
+
+  <!-- 5 · SYNAPSE -->
+  <section class="station tall" data-stage="4" data-name="Synapse">
+    <div class="panel">
+      <p class="k rv">Cell speaks to cell</p>
+      <h2 class="split">Across the synapse</h2>
+      <p class="lead rv d1">The spike reaches the terminal but can't jump the gap. It releases chemical messengers (neurotransmitters) across a cleft about 20 nm wide.</p>
+      <ul class="parts">
+        <li class="rv"><span class="pk">Vesicles</span><span class="pt">Package</span><span class="pd">Voltage triggers fusion; neurotransmitter spills into the cleft.</span></li>
+        <li class="rv d1"><span class="pk">Messenger</span><span class="pt">Cross</span><span class="pd">Acetylcholine, glutamate, GABA, dopamine: each carries a different instruction.</span></li>
+        <li class="rv d2"><span class="pk">Receptors</span><span class="pt">Receive</span><span class="pd">Binding opens channels on the next dendrite, and the decision begins again.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 6 · NETWORK -->
+  <section class="station tall center" data-stage="5" data-name="Network">
+    <div class="panel">
+      <p class="k rv">One becomes many</p>
+      <h2 class="split">A cell is nothing. A network is everything.</h2>
+      <p class="lead rv d1">Wire billions of these cells together, each reaching thousands of others, and something appears that no single neuron contains: a mind. Now watch it take shape, one region at a time.</p>
+      <div class="chips">
+        <div class="chip rv"><div class="n" data-count="86" data-suffix=" B">0</div><div class="l">Neurons</div></div>
+        <div class="chip rv d1"><div class="n" data-count="100" data-suffix=" T">0</div><div class="l">Synapses</div></div>
+        <div class="chip rv d2"><div class="n" data-count="86" data-suffix=" B">0</div><div class="l">Glia</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · HINDBRAIN -->
+  <section class="station tall" data-stage="6" data-name="Hindbrain">
+    <div class="panel">
+      <p class="k rv">Assembling · part 1 of 4 · hindbrain</p>
+      <h2 class="split">First, the life-support</h2>
+      <p class="lead rv d1">The oldest brain arrives first: the parts that keep you alive without a thought. Watch them light up at the base.</p>
+      <ul class="parts">
+        <li class="rv"><span class="pk dot" style="--c:#ff88b0">Cerebellum</span><span class="pt">Coordinate</span><span class="pd">Balance, posture, smooth movement and motor learning (implicit memory).</span></li>
+        <li class="rv d1"><span class="pk dot" style="--c:#ff9d5c">Pons</span><span class="pt">Bridge</span><span class="pd">Relays between cerebrum and cerebellum; helps drive breathing.</span></li>
+        <li class="rv d2"><span class="pk dot" style="--c:#ff6a6a">Medulla</span><span class="pt">Sustain</span><span class="pd">Controls heartbeat, breathing and reflexes like swallowing, automatically.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 8 · MIDBRAIN -->
+  <section class="station tall right" data-stage="6" data-name="Midbrain">
+    <div class="panel">
+      <p class="k rv">Assembling · part 2 of 4 · midbrain</p>
+      <h2 class="split">The relay of reflexes</h2>
+      <p class="lead rv d1">A small hub grows above the brainstem: the midbrain, or optic lobe. It snaps your attention to what you see and hear.</p>
+      <ul class="parts">
+        <li class="rv"><span class="pk dot" style="--c:#c8f06a">Optic lobe</span><span class="pt">Reflex</span><span class="pd">Superior colliculi handle visual reflexes; inferior colliculi handle auditory reflexes.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 9 · FOREBRAIN CORE -->
+  <section class="station tall" data-stage="6" data-name="Forebrain">
+    <div class="panel">
+      <p class="k rv">Assembling · part 3 of 4 · forebrain core</p>
+      <h2 class="split">The core lights up</h2>
+      <p class="lead rv d1">Deep in the centre, the relay and control structures take their place: the parts that route your senses and hold your feelings and memories.</p>
+      <ul class="parts">
+        <li class="rv"><span class="pk dot" style="--c:#66f0c0">Thalamus</span><span class="pt">Route</span><span class="pd">The grand relay: nearly all sensory signals (except smell) pass through here.</span></li>
+        <li class="rv d1"><span class="pk dot" style="--c:#66f0c0">Hypothalamus</span><span class="pt">Regulate</span><span class="pd">Runs the body clock, hunger, thirst, temperature; commands the pituitary gland.</span></li>
+        <li class="rv d2"><span class="pk dot" style="--c:#66f0c0">Limbic system</span><span class="pt">Feel</span><span class="pd">Amygdala drives emotion and fear; hippocampus turns recent events into memory.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 10 · CEREBRUM LOBES -->
+  <section class="station tall right" data-stage="6" data-name="Cerebrum">
+    <div class="panel">
+      <p class="k rv">Assembling · part 4 of 4 · cerebrum</p>
+      <h2 class="split">And the cortex wraps over</h2>
+      <p class="lead rv d1">Last and newest, the cerebrum folds over everything: two hemispheres joined by the corpus callosum, split into four lobes, each a different job.</p>
+      <ul class="parts">
+        <li class="rv"><span class="pk dot" style="--c:#ffb457">Frontal</span><span class="pt">Act &amp; plan</span><span class="pd">Motor cortex, decisions, reasoning, personality and speech.</span></li>
+        <li class="rv d1"><span class="pk dot" style="--c:#7fe0a0">Parietal</span><span class="pt">Sense</span><span class="pd">Touch, temperature and where your body is in space.</span></li>
+        <li class="rv d2"><span class="pk dot" style="--c:#b48cff">Temporal</span><span class="pt">Hear</span><span class="pd">Hearing, language and long-term memory.</span></li>
+        <li class="rv d3"><span class="pk dot" style="--c:#6ea8ff">Occipital</span><span class="pt">See</span><span class="pd">The entire visual world is assembled here.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 11 · ASSEMBLED / CLOSE — land on the finished brain, hold, THEN scroll to the text -->
+  <section class="station finale center" data-stage="6" data-name="The Brain">
+    <div class="finale-hold">
+      <p class="finale-cue">The brain, complete · keep scrolling</p>
+    </div>
+    <div class="panel">
+      <p class="k rv">One organ, complete</p>
+      <h2 class="split">But a brain alone does nothing</h2>
+      <p class="lead rv d1">Every region is in place and lit in its own colour. Yet sealed in the skull it is blind and still — a brain becomes a mind only by reaching into a body. Keep scrolling, and watch it grow its wiring.</p>
+      <p class="desc rv d2">→ the brain stays whole and lifts into the head, then grows a cord and wires the upper body.</p>
+    </div>
+  </section>
+
+  <!-- 12 · SPINAL CORD & SPINE — brain lifts into the head; CNS extends down -->
+  <section class="station tall" data-stage="7" data-name="Spinal Cord">
+    <div class="panel">
+      <p class="k rv">The central nervous system · in the body</p>
+      <h2 class="split">Into the head, down the spine</h2>
+      <p class="lead rv d1">The whole brain shrinks into the skull, and a <b>spinal cord</b> grows down inside the vertebral column. Brain + cord together are the <b>central nervous system (CNS)</b> — shielded in bone.</p>
+      <ul class="parts">
+        <li class="rv"><span class="pk dot" style="--c:#8cf0ff">Spinal cord</span><span class="pt">Relay &amp; reflex</span><span class="pd">Carries signals up and down the body — and can fire simple reflexes on its own.</span></li>
+        <li class="rv d1"><span class="pk dot" style="--c:#cbc6b4">Vertebrae</span><span class="pt">Shield</span><span class="pd">Stacked bones of the spine armour the cord along its whole length.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 13 · CRANIAL NERVES — 12 bilateral pairs from the brainstem -->
+  <section class="station tall right" data-stage="7" data-name="Cranial Nerves">
+    <div class="panel">
+      <p class="k rv">The peripheral nervous system · from the brain</p>
+      <h2 class="split">Twelve cranial pairs</h2>
+      <p class="lead rv d1">Twelve nerve pairs leave the underside of the brain — one on the left, one on the right — each running to a target in the head. The tenth, the <b>vagus</b>, reaches all the way down to the heart and lungs.</p>
+      <ul class="parts">
+        <li class="rv"><span class="pk dot" style="--c:#ffcc55">Sight &amp; smell</span><span class="pt">I · II</span><span class="pd">Optic and olfactory nerves wire the eyes and nose straight to the brain.</span></li>
+        <li class="rv d1"><span class="pk dot" style="--c:#ffcc55">Face &amp; hearing</span><span class="pt">V · VII · VIII</span><span class="pd">Trigeminal, facial and vestibulocochlear serve sensation, expression and the inner ear.</span></li>
+        <li class="rv d2"><span class="pk dot" style="--c:#ffcc55">Vagus</span><span class="pt">X</span><span class="pd">Runs down to the heart, lungs and gut — the body's rest-and-digest line.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 14 · SPINAL NERVES & ORGANS — region-grouped pairs + vagus targets -->
+  <section class="station tall" data-stage="7" data-name="Spinal Nerves">
+    <div class="panel">
+      <p class="k rv">The peripheral nervous system · from the cord</p>
+      <h2 class="split">Spinal nerves, by region</h2>
+      <p class="lead rv d1">At every vertebra a <b>pair</b> of spinal nerves branches off, grouped by region of the spine — each a thin two-way cable carrying sensation in and commands out.</p>
+      <ul class="parts">
+        <li class="rv"><span class="pk dot" style="--c:#82ccff">Cervical · 8 pairs</span><span class="pt">Neck &amp; arms</span><span class="pd">The upper pairs weave into the brachial plexus that drives the shoulders and hands.</span></li>
+        <li class="rv d1"><span class="pk dot" style="--c:#ff8fc4">Thoracic · 12 pairs</span><span class="pt">Chest wall</span><span class="pd">Wrap around the ribs, one pair per level, to the muscles and skin of the trunk.</span></li>
+        <li class="rv d2"><span class="pk dot" style="--c:#ff6a6a">Heart &amp; lungs</span><span class="pt">What they reach</span><span class="pd">The organs the vagus and thoracic nerves quietly keep running.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 15 · EXPLORE — pinned; drag to rotate the whole upper-body anatomy -->
+  <section class="station finale center" data-stage="7" data-name="Explore">
+    <div class="finale-hold">
+      <p class="finale-cue">drag to rotate · explore the wiring ↔</p>
+    </div>
+    <div class="panel">
+      <p class="k rv">The whole upper body · yours to turn</p>
+      <h2 class="split">Grab it. Turn it around.</h2>
+      <p class="lead rv d1">The brain in its skull, the cord in its spine, every nerve pair in place. Drag to spin the whole nervous system in 3D and see how the wiring wraps through the body.</p>
+    </div>
+  </section>
+
+  <!-- 16 · CLOSE -->
+  <section class="station finale center" data-stage="7" data-name="You">
+    <div class="finale-hold">
+      <p class="finale-cue">from one cell to all of this · keep scrolling</p>
+    </div>
+    <div class="panel">
+      <p class="k rv">From a cell to a self</p>
+      <h1 class="split">YOU JUST WATCHED<br>YOURSELF <span class="ol">FORM.</span></h1>
+      <p class="lead rv d1">Nothing → a neuron → glia → a firing signal → a synapse → a network → a brain → a body wired nerve by nerve. Every idea, every heartbeat, every touch you will ever feel runs on this.</p>
+      <p class="desc rv d2" style="font-family:var(--f-mono);letter-spacing:.1em;font-size:12px">Drag to look around · scroll up to rewind</p>
+    </div>
+  </section>
+
+</main>
+
+<script src="./three.min.js"></script>
+<script>
+/* =====================================================================
+   PART A — the particle morph (three.js)
+   One BufferGeometry of N points. We precompute several equal-count
+   "target" clouds (scatter, neuron, network, brain) plus per-target
+   colors, then lerp positions/colors by scroll progress each frame.
+   The brain is region-tagged so it can be assembled part by part.
+   ===================================================================== */
+const N = 22000;                                  // particle count
+const canvas = document.getElementById('glcanvas');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(52, innerWidth/innerHeight, .1, 100);
+camera.position.set(0,0,15);
+
+/* soft round sprite so points read as glowing dots, not squares */
+function makeSprite(){
+  const c=document.createElement('canvas'); c.width=c.height=64;
+  const g=c.getContext('2d'); const grd=g.createRadialGradient(32,32,0,32,32,32);
+  grd.addColorStop(0,'rgba(255,255,255,1)'); grd.addColorStop(.35,'rgba(255,255,255,.7)');
+  grd.addColorStop(1,'rgba(255,255,255,0)');
+  g.fillStyle=grd; g.fillRect(0,0,64,64);
+  return new THREE.CanvasTexture(c);
+}
+const sprite = makeSprite();
+
+/* ---- helpers ---- */
+const TAU=Math.PI*2, rnd=(a=1)=>(Math.random()*2-1)*a;
+function fill(fn){ const a=new Float32Array(N*3);
+  for(let i=0;i<N;i++){ const p=fn(i,i/N); a[i*3]=p[0];a[i*3+1]=p[1];a[i*3+2]=p[2]; } return a; }
+
+/* scatter: diffuse dust cloud (the "nothing") */
+const cloudScatter = fill(()=>{ const r=6+Math.random()*10, t=Math.random()*TAU, p=Math.acos(rnd());
+  return [r*Math.sin(p)*Math.cos(t), r*Math.sin(p)*Math.sin(t)*.7, r*Math.cos(p)]; });
+
+/* neuron: soma sphere + branching dendrites + long myelinated axon + terminals. */
+function branch(start, dir, len, spread){
+  const t=Math.random();
+  return [ start[0]+dir[0]*len*t + rnd(spread*t),
+           start[1]+dir[1]*len*t + rnd(spread*t),
+           start[2]+dir[2]*len*t + rnd(spread*t) ];
+}
+const neuronPart=new Uint8Array(N);              // 0 soma · 1 dendrite · 2 axon · 3 terminal
+const cloudNeuron = (()=>{ const a=new Float32Array(N*3);
+  const dends=[]; const nd=6;
+  for(let k=0;k<nd;k++){ const t=k/nd*TAU; dends.push([Math.cos(t)*.9,Math.sin(t)*.9+.3,rnd(.5)]); }
+  for(let i=0;i<N;i++){ const f=i/N; let p;
+    if(f<0.14){ neuronPart[i]=0;                   // soma (cell body)
+      const r=Math.cbrt(Math.random())*1.5, t=Math.random()*TAU, ph=Math.acos(rnd());
+      p=[r*Math.sin(ph)*Math.cos(t), r*Math.sin(ph)*Math.sin(t), r*Math.cos(ph)*.9];
+    } else if(f<0.48){ neuronPart[i]=1;            // dendrites
+      const d=dends[(i%nd)]; const gen=Math.random();
+      const base=[d[0]*1.2,d[1]*1.2,d[2]];
+      p=branch(base,d,3.2,.6+gen*.5);
+      if(Math.random()<.5){ const jt=[d[0]+rnd(.8),d[1]+rnd(.8),d[2]+rnd(.8)];
+        p=branch([p[0],p[1],p[2]],jt,1.4,.5); }
+    } else if(f<0.86){ neuronPart[i]=2;            // axon (single long fibre)
+      const t=(f-0.48)/0.38;
+      const x=1.4 + t*10.5;
+      const y=-0.4 - t*1.2 + Math.sin(t*9)*.05;
+      const z=Math.sin(t*7)*.12;
+      const seg=Math.sin(t*22);                   // myelin bands, gaps at nodes
+      const rad=seg>0.35?0.42:0.12;
+      const t2=Math.random()*TAU;
+      p=[x+rnd(.15), y+Math.cos(t2)*rad, z+Math.sin(t2)*rad];
+    } else { neuronPart[i]=3;                      // axon terminals
+      const t=Math.random(); const ang=rnd(1.1);
+      p=[11.9 + t*1.8 + rnd(.2), -1.6 + ang*2.0*t + rnd(.2), rnd(.5)*t];
+    }
+    a[i*3]=p[0]; a[i*3+1]=p[1]; a[i*3+2]=p[2];
+  }
+  for(let i=0;i<N;i++){ a[i*3]-=5.5; }            // recenter into view
+  return a;
+})();
+
+/* network: many small neuron-ish clusters wired in a loose 3D lattice */
+const cloudNetwork = (()=>{ const a=new Float32Array(N*3);
+  const nodes=42, cen=[];
+  for(let k=0;k<nodes;k++) cen.push([rnd(9),rnd(6),rnd(6)]);
+  for(let i=0;i<N;i++){ const f=i/N;
+    if(f<0.55){
+      const c=cen[i%nodes]; const r=Math.cbrt(Math.random())*.6;
+      const t=Math.random()*TAU, ph=Math.acos(rnd());
+      a[i*3]=c[0]+r*Math.sin(ph)*Math.cos(t); a[i*3+1]=c[1]+r*Math.sin(ph)*Math.sin(t); a[i*3+2]=c[2]+r*Math.cos(ph);
+    } else {
+      const a1=cen[i%nodes], b1=cen[(i*7+3)%nodes], t=Math.random();
+      a[i*3]=a1[0]+(b1[0]-a1[0])*t+rnd(.18);
+      a[i*3+1]=a1[1]+(b1[1]-a1[1])*t+rnd(.18);
+      a[i*3+2]=a1[2]+(b1[2]-a1[2])*t+rnd(.18);
+    }
+  }
+  return a;
+})();
+
+/* ---- BRAIN, region-tagged so it can be assembled part by part ----
+   Convention: x = front(+)/back(-), y = up(+)/down(-), z = left/right. */
+const R = {FRONTAL:0,PARIETAL:1,TEMPORAL:2,OCCIPITAL:3,CORE:4,MIDBRAIN:5,CEREBELLUM:6,PONS:7,MEDULLA:8};
+/* rs/re windows retuned for the new 15-section layout: hindbrain i10 (.714–.786),
+   midbrain i11 (.786–.857), forebrain core i12 (.857–.929), cerebrum i13 (.929–1). */
+const REGION_META=[
+  {key:'FRONTAL',   col:[1.00,0.70,0.34], rs:0.930, re:0.965},
+  {key:'PARIETAL',  col:[0.50,0.88,0.63], rs:0.940, re:0.972},
+  {key:'TEMPORAL',  col:[0.70,0.55,1.00], rs:0.950, re:0.980},
+  {key:'OCCIPITAL', col:[0.43,0.66,1.00], rs:0.958, re:0.992},
+  {key:'CORE',      col:[0.40,0.94,0.75], rs:0.860, re:0.922},
+  {key:'MIDBRAIN',  col:[0.78,0.94,0.42], rs:0.792, re:0.852},
+  {key:'CEREBELLUM',col:[1.00,0.53,0.69], rs:0.716, re:0.776},
+  {key:'PONS',      col:[1.00,0.62,0.36], rs:0.726, re:0.780},
+  {key:'MEDULLA',   col:[1.00,0.42,0.42], rs:0.720, re:0.783},
+];
+const brainRegion=new Uint8Array(N);
+const cloudBrain=new Float32Array(N*3);
+(function(){
+  function foldv(t,p){ return 1+0.10*Math.sin(t*9)*Math.sin(p*7)+0.06*Math.sin(t*17+1)*Math.sin(p*13); }
+  const CY=0.9, EX=4.6,EY=3.0,EZ=3.4;             // cerebrum ellipsoid
+  function cortex(zone){
+    let a,b,nx,ny,nz,tries=0;
+    do{ a=Math.random()*TAU; b=Math.acos(rnd());
+        nx=Math.sin(b)*Math.cos(a); ny=Math.cos(b); nz=Math.sin(b)*Math.sin(a); tries++;
+    } while(!zone(nx,ny,nz) && tries<40);
+    const fo=foldv(a,b);
+    let x=nx*EX*fo, y=CY+ny*EY*fo, z=nz*EZ*fo;
+    z += (z>=0?1:-1)*0.45;                         // longitudinal fissure gap
+    if(y<-0.4) y=-0.4-(y+0.4)*0.25;                // flatten underside
+    return [x,y,z];
+  }
+  const zFrontal=(nx)=>nx>0.32;
+  const zOccip  =(nx)=>nx<-0.42;
+  const zTemporal=(nx,ny,nz)=>(nz*nz>0.34)&&ny<0.15&&nx>-0.42&&nx<0.32;
+  const zPariet =(nx,ny,nz)=>ny>0.02&&nx<=0.32&&nx>=-0.42&&!((nz*nz>0.34)&&ny<0.15);
+  for(let i=0;i<N;i++){ const f=i/N; let p,reg;
+    if(f<0.15){ reg=R.FRONTAL;   p=cortex(zFrontal); }
+    else if(f<0.27){ reg=R.PARIETAL; p=cortex(zPariet); }
+    else if(f<0.39){ reg=R.TEMPORAL; p=cortex(zTemporal); }
+    else if(f<0.50){ reg=R.OCCIPITAL;p=cortex(zOccip); }
+    else if(f<0.62){                               // forebrain core (thalamus/hypothalamus/limbic)
+      reg=R.CORE; const t=Math.random()*TAU,ph=Math.acos(rnd()),r=Math.cbrt(Math.random());
+      p=[0.3+Math.sin(ph)*Math.cos(t)*1.2*r, 0.35+Math.cos(ph)*0.95*r, Math.sin(ph)*Math.sin(t)*1.35*r];
+    }
+    else if(f<0.68){                               // midbrain / optic lobe
+      reg=R.MIDBRAIN; const t=Math.random()*TAU,ph=Math.acos(rnd()),r=Math.cbrt(Math.random());
+      p=[-0.7+Math.sin(ph)*Math.cos(t)*0.72*r, -0.6+Math.cos(ph)*0.6*r, Math.sin(ph)*Math.sin(t)*0.8*r];
+    }
+    else if(f<0.86){                               // cerebellum
+      reg=R.CEREBELLUM; const t=Math.random()*TAU,ph=Math.acos(rnd());
+      const fo=1+0.16*Math.sin(t*22)*Math.sin(ph*20);
+      p=[-3.5+Math.cos(t)*Math.sin(ph)*1.7*fo, -1.7+Math.cos(ph)*1.15*fo, Math.sin(t)*Math.sin(ph)*2.2*fo];
+    }
+    else if(f<0.92){                               // pons
+      reg=R.PONS; const t=Math.random(),ang=Math.random()*TAU,r=0.62*(1-t*.2);
+      p=[-2.0-t*0.2+Math.cos(ang)*r, -1.4-t*1.0, Math.sin(ang)*r];
+    }
+    else {                                         // medulla oblongata
+      reg=R.MEDULLA; const t=Math.random(),ang=Math.random()*TAU,r=0.5*(1-t*.45);
+      p=[-2.3-t*0.35+Math.cos(ang)*r, -2.4-t*2.1, Math.sin(ang)*r];
+    }
+    brainRegion[i]=reg; cloudBrain[i*3]=p[0];cloudBrain[i*3+1]=p[1];cloudBrain[i*3+2]=p[2];
+  }
+})();
+
+/* per-stage base colors (r,g,b 0..1) */
+const C_DUST=[0.42,0.55,0.72], C_NEURON=[0.40,0.94,0.75],
+      C_NET=[0.43,0.66,1.0],   C_BRAIN=[0.80,0.86,1.0];
+
+/* geometry: live positions + colors, seeded at scatter */
+const positions=new Float32Array(cloudScatter);
+const colors=new Float32Array(N*3);
+const geo=new THREE.BufferGeometry();
+geo.setAttribute('position',new THREE.BufferAttribute(positions,3));
+geo.setAttribute('color',new THREE.BufferAttribute(colors,3));
+const mat=new THREE.PointsMaterial({size:.08, map:sprite, vertexColors:true,
+  transparent:true, opacity:.95, depthWrite:false, blending:THREE.AdditiveBlending});
+const points=new THREE.Points(geo,mat);
+scene.add(points);
+
+/* =====================================================================
+   GLIA ACCENT LAYER — a SECOND point cloud. Glia cells condense out of the
+   dust (mid-air) and settle around the neuron, each sending a dot-strand
+   connector to it, during the glia station. Rotation locked to the neuron.
+   ===================================================================== */
+const GLIA_CELLS=5;
+const NG=5000;
+const GLIA_PER=Math.floor(NG/GLIA_CELLS);  // points per cell, stored in contiguous blocks
+const gliaTarget=new Float32Array(NG*3);   // formed positions, around the neuron
+const gliaStart =new Float32Array(NG*3);   // scattered start — the drifting dust
+const gliaCol   =new Float32Array(NG*3);
+(function buildGlia(){
+  // order MUST match the .glia-list rows + gliaMeta below (0..4)
+  const cells=[
+    {c:[-2.6, 3.2, 0.8], col:[0.40,0.94,0.75], anchor:[-1.2, 0.7, 0.1]},  // 0 astrocyte      teal
+    {c:[ 3.9,-2.9,-0.9], col:[1.00,0.62,0.36], anchor:[ 2.1,-0.9,-0.1]},  // 1 microglia      orange
+    {c:[-5.2,-2.7, 1.0], col:[0.78,0.71,1.00], anchor:[-3.4,-0.9, 0.1]},  // 2 oligodendrocyte violet (CNS myelin, axon start)
+    {c:[ 5.3, 2.9,-1.0], col:[1.00,0.53,0.69], anchor:[ 4.0, 0.1,-0.1]},  // 3 Schwann cell   pink   (PNS myelin, axon far end)
+    {c:[ 0.4, 4.2, 1.2], col:[0.43,0.66,1.00], anchor:[-0.4, 1.3, 0.1]},  // 4 ependymal      blue
+  ];
+  const per=GLIA_PER; let gi=0;
+  const place=(x,y,z,r,g,b)=>{
+    gliaTarget[gi*3]=x; gliaTarget[gi*3+1]=y; gliaTarget[gi*3+2]=z;
+    gliaCol[gi*3]=r; gliaCol[gi*3+1]=g; gliaCol[gi*3+2]=b;
+    const rr=9+Math.random()*9, t=Math.random()*TAU, ph=Math.acos(rnd());
+    gliaStart[gi*3]=rr*Math.sin(ph)*Math.cos(t);
+    gliaStart[gi*3+1]=rr*Math.sin(ph)*Math.sin(t)*.7;
+    gliaStart[gi*3+2]=rr*Math.cos(ph); gi++;
+  };
+  cells.forEach(cell=>{
+    const body=Math.floor(per*0.68), conn=per-body;
+    for(let k=0;k<body;k++){
+      let x,y,z;
+      if(k<body*0.66){                                  // soma blob
+        const rr=Math.cbrt(Math.random())*0.6, t=Math.random()*TAU, ph=Math.acos(rnd());
+        x=cell.c[0]+rr*Math.sin(ph)*Math.cos(t);
+        y=cell.c[1]+rr*Math.sin(ph)*Math.sin(t);
+        z=cell.c[2]+rr*Math.cos(ph);
+      } else {                                          // radiating processes
+        const t=Math.random(), ang=Math.random()*TAU, ph=Math.acos(rnd()), len=0.6+Math.random()*1.0;
+        x=cell.c[0]+Math.sin(ph)*Math.cos(ang)*len*t + rnd(0.08);
+        y=cell.c[1]+Math.sin(ph)*Math.sin(ang)*len*t + rnd(0.08);
+        z=cell.c[2]+Math.cos(ph)*len*t + rnd(0.08);
+      }
+      place(x,y,z, cell.col[0],cell.col[1],cell.col[2]);
+    }
+    for(let k=0;k<conn;k++){                             // dot-strand connector to neuron
+      const t=k/conn;
+      place(cell.c[0]+(cell.anchor[0]-cell.c[0])*t+rnd(0.1),
+            cell.c[1]+(cell.anchor[1]-cell.c[1])*t+rnd(0.1),
+            cell.c[2]+(cell.anchor[2]-cell.c[2])*t+rnd(0.1),
+            cell.col[0]*0.5+0.18, cell.col[1]*0.5+0.20, cell.col[2]*0.5+0.22);
+    }
+  });
+})();
+const gliaGeo=new THREE.BufferGeometry();
+gliaGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(gliaStart),3));
+gliaGeo.setAttribute('color',new THREE.BufferAttribute(gliaCol,3));
+const gliaMat=new THREE.PointsMaterial({size:.085, map:sprite, vertexColors:true,
+  transparent:true, opacity:0, depthWrite:false, blending:THREE.AdditiveBlending});
+const gliaPoints=new THREE.Points(gliaGeo,gliaMat);
+gliaPoints.visible=false; scene.add(gliaPoints);
+function updateGlia(g){
+  let vis=0;                                            // visible only over the glia station (i5)
+  if(g>0.357 && g<0.4286) vis=Math.min(1,(g-0.357)/0.012)*Math.min(1,(0.4286-g)/0.014);
+  gliaMat.opacity=vis*0.95; gliaPoints.visible=vis>0.01;
+  if(vis<=0.01) return;
+  const gp=gliaGeo.attributes.position.array;
+  for(let k=0;k<GLIA_CELLS;k++){                        // each cell condenses in its own scrub band
+    const f=easeIO(Math.min(1,Math.max(0,(gliaProg - k*0.19)/0.14)));
+    const j0=k*GLIA_PER*3, j1=(k+1)*GLIA_PER*3;
+    for(let i=j0;i<j1;i++) gp[i]=gliaStart[i]+(gliaTarget[i]-gliaStart[i])*f;
+  }
+  gliaGeo.attributes.position.needsUpdate=true;
+  gliaPoints.rotation.copy(points.rotation);
+}
+
+/* ---- MEMBRANE dot-cloud: a phospholipid bilayer CROSS-SECTION in the x-y plane
+   (faces the camera). Two beaded head rows (outer y≈+1, inner y≈-1), tails
+   pointing inward, three hourglass channel proteins with a central pore, and
+   ions in the pores. The main cloud morphs neuron<->this during the membrane
+   station, reading as a zoom INTO the axon wall, then reforms to the neuron. */
+const cloudMembrane=new Float32Array(N*3);
+const cloudMembraneCol=new Float32Array(N*3);
+const ionFlag=new Uint8Array(N);                 // 1 = this dot is a mobile Na⁺/K⁺ ion
+const ionDir =new Int8Array(N);                  // -1 = flows inward (down), +1 = outward (up)
+const ionPhase=new Float32Array(N);              // travel offset so ions don't move in lockstep
+(function buildMembraneCloud(){
+  // Wide sheet (HX) so the camera can sit back and show a BROAD run of bilayer
+  // with several embedded proteins (like a real membrane diagram), not a slice.
+  const HX=10.5, yOut=0.82, yIn=-0.82, DZ=0.5, chanH=1.02;
+  const chans=[{x:0,kind:'pump'},{x:-3.4,kind:'na'},{x:3.4,kind:'k'},
+               {x:-6.8,kind:'k'},{x:6.8,kind:'na'}];   // 5 proteins spread across the width
+  const NC=chans.length;
+  const inChan=x=>chans.some(c=>Math.abs(x-c.x)<0.62);
+  const cHeadO=[0.56,0.72,1.00], cHeadI=[0.45,0.85,0.85],
+        cTail=[0.46,0.52,0.64],  cWall=[0.74,0.82,0.98];
+  const set=(i,x,y,z,c)=>{ cloudMembrane[i*3]=x;cloudMembrane[i*3+1]=y;cloudMembrane[i*3+2]=z;
+    cloudMembraneCol[i*3]=c[0];cloudMembraneCol[i*3+1]=c[1];cloudMembraneCol[i*3+2]=c[2]; };
+  const colX=()=>{ let x; do{ x=(Math.random()*2-1)*HX; }while(inChan(x)); return Math.round(x/0.5)*0.5; };
+  for(let i=0;i<N;i++){ const f=i/N;
+    if(f<0.30){        set(i, colX()+rnd(0.11), yOut+rnd(0.12), rnd(DZ), cHeadO); }        // outer heads (dense)
+    else if(f<0.60){   set(i, colX()+rnd(0.11), yIn +rnd(0.12), rnd(DZ), cHeadI); }        // inner heads (dense)
+    else if(f<0.82){   const outer=Math.random()<0.5, ty=Math.random();                   // tails, inward
+                       set(i, colX()+rnd(0.08), (outer?yOut:yIn)*(0.12+ty*0.8), rnd(DZ*0.7), cTail); }
+    else if(f<0.92){   const c=chans[i%NC], yy=(Math.random()*2-1)*chanH;                  // channel walls (hourglass)
+                       const fn=0.16+Math.abs(yy)*0.30, ang=Math.random()*TAU;
+                       set(i, c.x+Math.cos(ang)*fn, yy, Math.sin(ang)*fn, cWall); }
+    else {             const c=chans[i%NC], yy=(Math.random()*2-1)*1.28;                   // ions through the pore
+                       const isNa=c.kind==='na'||(c.kind==='pump'&&Math.random()<0.5);
+                       const col=c.kind==='k'?[0.43,0.66,1.0]:c.kind==='na'?[1.0,0.42,0.42]:(isNa?[1.0,0.42,0.42]:[0.43,0.66,1.0]);
+                       set(i, c.x+rnd(0.10), yy, rnd(0.10), col);
+                       ionFlag[i]=1; ionPhase[i]=Math.random();
+                       ionDir[i]= c.kind==='na'?-1 : c.kind==='k'?1 : (isNa?-1:1); }        // Na⁺ in, K⁺ out
+  }
+})();
+
+/* keyframe schedule. Section virtual-slots (15 sections, each = 1/14 of g):
+   void .00 | soma .071 | dend .143 | axon .214 | term .286 | glia .357 |
+   AP .429 | membrane .500 | synapse .571 | network .643 | hind .714 |
+   mid .786 | fore .857 | cerebrum .929 | (close =1). */
+const easeIO=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+
+/* --- neuron builds itself PART BY PART (soma→dendrites→axon→terminals), each
+   flying in from the dust within its own section, brain-assembly style. --- */
+const NEURON_BUILD_END=0.357;     // whole cell done as we reach the glia section
+const NEURON_UNIFY=0.335;         // blend the four part-colours back to one teal
+const NEURON_PARTS=[
+  {col:[0.40,0.94,0.75], rs:0.045, re:0.135},   // 0 soma      (section i1)
+  {col:[0.43,0.66,1.00], rs:0.140, re:0.210},   // 1 dendrites (i2)
+  {col:[0.78,0.71,1.00], rs:0.212, re:0.282},   // 2 axon      (i3)
+  {col:[0.50,0.88,0.63], rs:0.285, re:0.352},   // 3 terminals (i4)
+];
+
+const G_DEN=14;                                  // FIXED morph denominator (the original 15-section span). Appended chapters extend g past 1 without shifting any earlier keyframe.
+const BRAIN_START=0.7143;                        // network → brain assembly (i10)
+const MEM_START=0.500, MEM_END=0.5714;           // membrane section (i7)
+function memAmt(g){        // 0 → quick zoom-in → HOLD 1 (bilayer face-on) → quick zoom-out → 0
+  if(g<=MEM_START||g>=MEM_END) return 0;
+  const rise=0.521, fall=0.553;                  // wider in/out ramps (slower dive + exit); held at 1 between
+  if(g<rise) return easeIO((g-MEM_START)/(rise-MEM_START));
+  if(g>fall) return easeIO((MEM_END-g)/(MEM_END-fall));
+  return 1;
+}
+const KEYS=[
+  {at:0.357, cloud:cloudNeuron,  col:C_NEURON},  // neuron fully built
+  {at:0.6429,cloud:cloudNeuron,  col:C_NEURON},  // HOLD through glia / AP / membrane / synapse
+  {at:0.685, cloud:cloudNetwork, col:C_NET},     // expand to the network during the network section
+];
+
+let scrollG=0;      // "virtual" timeline progress 0..1 (drives the 3D scene)
+let apProg=0;       // action-potential scrub 0..1 — drives BOTH the 3D axon pulse + 2D graph tracer
+let gliaProg=0;     // glia scrub 0..1 — reveals the five glial cells one at a time
+let gTime=0;        // seconds, for continuous motion (membrane ions flowing)
+
+/* Section geometry + physical→virtual scroll remap. Each section maps to an
+   equal virtual slot, so the physically TALL (pinned) action-potential section
+   advances the 3D timeline no faster than any other — and every downstream
+   keyframe keeps its original g regardless of that section's height. */
+let secTops=[], nSec=0, scrollHpx=0;
+function measure(){
+  const secs=document.querySelectorAll('.station');
+  secTops=[...secs].map(s=>s.offsetTop); nSec=secs.length;
+  scrollHpx=document.documentElement.scrollHeight;
+}
+function physToVirtG(y){
+  if(nSec<2) return 0;
+  let i=0; for(let k=0;k<nSec;k++){ if(y>=secTops[k]) i=k; }
+  const segStart=secTops[i], segEnd=(i+1<nSec)?secTops[i+1]:scrollHpx;
+  const local=segEnd>segStart?Math.min(1,Math.max(0,(y-segStart)/(segEnd-segStart))):0;
+  // Morph-g uses a FIXED denominator G_DEN, NOT (nSec-1): section i spans
+  // [i/G_DEN,(i+1)/G_DEN]. So the first 15 sections keep their exact original g,
+  // and APPENDED chapters simply push g past 1.0 — never shifting a keyframe.
+  return (i+local)/G_DEN;
+}
+function writeMembrane(g){
+  const bl=memAmt(g);
+  const pos=geo.attributes.position.array, col=geo.attributes.color.array;
+  const A=cloudNeuron, nb=C_NEURON;
+  const tt=gTime;
+  for(let i=0;i<N;i++){ const i3=i*3;
+    let mx=cloudMembrane[i3], my=cloudMembrane[i3+1], mz=cloudMembrane[i3+2];
+    // fluid-mosaic motion: a slow ripple TRAVELS along the sheet (undulation) plus
+    // fine per-dot jitter, so the whole bilayer visibly lives instead of freezing
+    // with only the ions moving.
+    const wave=Math.sin(mx*0.55 - tt*1.05)*0.11;   // travelling undulation across the membrane
+    mx += Math.sin(tt*0.8 + i*0.13)*0.06;
+    my += wave + Math.sin(tt*1.0 + i*0.07)*0.05;
+    mz += Math.cos(tt*0.6 + i*0.19)*0.06;
+    if(ionFlag[i]){                                   // mobile ion: travels through its pore along y
+      const raw=gTime*0.075*ionDir[i] + ionPhase[i], f=raw-Math.floor(raw);  // slower 0..1 loop
+      my = ionDir[i]<0 ? (1.28 - f*2.56) : (-1.28 + f*2.56);   // Na⁺ downward (in), K⁺ upward (out)
+    }
+    pos[i3]  =A[i3]  +(mx-A[i3])*bl;
+    pos[i3+1]=A[i3+1]+(my-A[i3+1])*bl;
+    pos[i3+2]=A[i3+2]+(mz-A[i3+2])*bl;
+    col[i3]  =nb[0]+(cloudMembraneCol[i3]  -nb[0])*bl;
+    col[i3+1]=nb[1]+(cloudMembraneCol[i3+1]-nb[1])*bl;
+    col[i3+2]=nb[2]+(cloudMembraneCol[i3+2]-nb[2])*bl;
+  }
+  geo.attributes.position.needsUpdate=true;
+  geo.attributes.color.needsUpdate=true;
+}
+/* neuron self-assembly: each part flies in from the dust in its own window and
+   lights its own colour, then all four unify to teal by the time it's whole. */
+function writeNeuronAssembly(g){
+  const pos=geo.attributes.position.array, col=geo.attributes.color.array;
+  const sc=cloudScatter, ne=cloudNeuron;
+  const uni=g>NEURON_UNIFY?Math.min(1,(g-NEURON_UNIFY)/(NEURON_BUILD_END-NEURON_UNIFY)):0;
+  for(let i=0;i<N;i++){
+    const m=NEURON_PARTS[neuronPart[i]];
+    let a=(g-m.rs)/((m.re-m.rs)||1); a=a<0?0:a>1?1:a; a=easeIO(a);
+    const i3=i*3;
+    pos[i3]  =sc[i3]  +(ne[i3]  -sc[i3])*a;
+    pos[i3+1]=sc[i3+1]+(ne[i3+1]-sc[i3+1])*a;
+    pos[i3+2]=sc[i3+2]+(ne[i3+2]-sc[i3+2])*a;
+    let r =C_DUST[0]+(m.col[0]-C_DUST[0])*a,
+        gg=C_DUST[1]+(m.col[1]-C_DUST[1])*a,
+        bb=C_DUST[2]+(m.col[2]-C_DUST[2])*a;
+    if(uni>0){ r+=(C_NEURON[0]-r)*uni; gg+=(C_NEURON[1]-gg)*uni; bb+=(C_NEURON[2]-bb)*uni; }
+    col[i3]=r; col[i3+1]=gg; col[i3+2]=bb;
+  }
+  geo.attributes.position.needsUpdate=true;
+  geo.attributes.color.needsUpdate=true;
+}
+function writeMorph(g){
+  if(g>=BODY_START){ writeBrainAnatomy(g); return; }
+  if(g>=BRAIN_START){ writeBrainAssembly(g); return; }
+  if(g<NEURON_BUILD_END){ writeNeuronAssembly(g); return; }
+  if(g>MEM_START && g<MEM_END){ writeMembrane(g); return; }
+  let k0=KEYS[0],k1=KEYS[KEYS.length-1];
+  for(let i=0;i<KEYS.length-1;i++){ if(g>=KEYS[i].at && g<=KEYS[i+1].at){k0=KEYS[i];k1=KEYS[i+1];break;} }
+  const span=(k1.at-k0.at)||1; const t=easeIO(Math.min(1,Math.max(0,(g-k0.at)/span)));
+  const A=k0.cloud,B=k1.cloud, pos=geo.attributes.position.array, col=geo.attributes.color.array;
+  const cr=k0.col[0]+(k1.col[0]-k0.col[0])*t, cg=k0.col[1]+(k1.col[1]-k0.col[1])*t, cb=k0.col[2]+(k1.col[2]-k0.col[2])*t;
+  for(let i=0;i<N*3;i++){ pos[i]=A[i]+(B[i]-A[i])*t; }
+  for(let i=0;i<N;i++){ col[i*3]=cr; col[i*3+1]=cg; col[i*3+2]=cb; }
+  geo.attributes.position.needsUpdate=true;
+  geo.attributes.color.needsUpdate=true;
+}
+
+/* brain assembly: each region flies in from the network cloud within its own
+   scroll window and lights its own color; a final "unify" blends to one brain. */
+const UNIFY=0.975;
+function writeBrainAssembly(g){
+  const pos=geo.attributes.position.array, col=geo.attributes.color.array;
+  const netP=cloudNetwork, brP=cloudBrain;
+  const uni = g>UNIFY ? Math.min(1,(g-UNIFY)/(1-UNIFY)) : 0;
+  for(let i=0;i<N;i++){
+    const m=REGION_META[brainRegion[i]];
+    let a=(g-m.rs)/((m.re-m.rs)||1); a=a<0?0:a>1?1:a; a=easeIO(a);
+    const i3=i*3;
+    pos[i3]  = netP[i3]  +(brP[i3]  -netP[i3])*a;
+    pos[i3+1]= netP[i3+1]+(brP[i3+1]-netP[i3+1])*a;
+    pos[i3+2]= netP[i3+2]+(brP[i3+2]-netP[i3+2])*a;
+    let r =C_NET[0]+(m.col[0]-C_NET[0])*a,
+        gg=C_NET[1]+(m.col[1]-C_NET[1])*a,
+        bb=C_NET[2]+(m.col[2]-C_NET[2])*a;
+    if(uni>0){   // "unify": brighten each region toward white by 25% so it LIGHTS UP but keeps its own colour (region-coded finale)
+      const lr=m.col[0]+(1-m.col[0])*0.25, lg=m.col[1]+(1-m.col[1])*0.25, lb=m.col[2]+(1-m.col[2])*0.25;
+      r+=(lr-r)*uni; gg+=(lg-gg)*uni; bb+=(lb-bb)*uni; }
+    col[i3]=r; col[i3+1]=gg; col[i3+2]=bb;
+  }
+  geo.attributes.position.needsUpdate=true;
+  geo.attributes.color.needsUpdate=true;
+}
+
+/* =====================================================================
+   BRAIN → UPPER-BODY ANATOMY.  The brain stays WHOLE — it is just shrunk and
+   lifted into the head as a rigid unit (writeBrainAnatomy, no dot ever leaves
+   it). A SEPARATE dot-layer (anatPoints, like the glia layer) then condenses
+   the rest around it: skull, upper spine + cord, the bilateral CRANIAL and
+   SPINAL nerve pairs (thin, coloured by region group), the vagus's target
+   organs, and a faint upper-body silhouette. Fully drag-rotatable to explore.
+   Lives at g>1 (fixed G_DEN=14), so it shifts none of the earlier timing.
+   ===================================================================== */
+const BODY_START=15/14;                          // anatomy chapter begins (section 15) ≈ 1.071
+/* brain centroid — so the whole brain can be scaled + moved as ONE rigid body */
+const brainC=(()=>{ let x=0,y=0,z=0; for(let i=0;i<N;i++){x+=cloudBrain[i*3];y+=cloudBrain[i*3+1];z+=cloudBrain[i*3+2];} return [x/N,y/N,z/N]; })();
+const HEAD=[0, 6.0, 0.2], BRAIN_SCALE=0.42;      // where/how big the brain sits in the head
+function writeBrainAnatomy(g){                    // keep the brain COMPLETE; shrink + lift it into the head
+  const t=easeIO(Math.min(1,Math.max(0,(g-BODY_START)/0.075)));
+  const s=1-(1-BRAIN_SCALE)*t;
+  const cx=brainC[0]+(HEAD[0]-brainC[0])*t, cy=brainC[1]+(HEAD[1]-brainC[1])*t, cz=brainC[2]+(HEAD[2]-brainC[2])*t;
+  const pos=geo.attributes.position.array, col=geo.attributes.color.array;
+  for(let i=0;i<N;i++){ const i3=i*3;
+    pos[i3]  =(cloudBrain[i3]  -brainC[0])*s+cx;
+    pos[i3+1]=(cloudBrain[i3+1]-brainC[1])*s+cy;
+    pos[i3+2]=(cloudBrain[i3+2]-brainC[2])*s+cz;
+    const m=REGION_META[brainRegion[i]];          // hold the region-lit colours (matches the finale)
+    col[i3]=m.col[0]+(1-m.col[0])*0.25; col[i3+1]=m.col[1]+(1-m.col[1])*0.25; col[i3+2]=m.col[2]+(1-m.col[2])*0.25;
+  }
+  geo.attributes.position.needsUpdate=true; geo.attributes.color.needsUpdate=true;
+}
+
+/* the separate anatomy dot-layer (skull, spine, cord, nerve pairs, organs, body) */
+const NA=16000;
+const anatTarget=new Float32Array(NA*3), anatStart=new Float32Array(NA*3), anatCol=new Float32Array(NA*3);
+const anatPart=new Uint8Array(NA);               // 0 skull/neck · 1 spine+cord · 2 cranial nerves · 3 spinal nerves+organs · 4 body silhouette
+(function buildAnatomy(){
+  let gi=0;
+  const push=(x,y,z,c,p)=>{ if(gi>=NA) return;
+    anatTarget[gi*3]=x;anatTarget[gi*3+1]=y;anatTarget[gi*3+2]=z; anatCol[gi*3]=c[0];anatCol[gi*3+1]=c[1];anatCol[gi*3+2]=c[2]; anatPart[gi]=p;
+    const rr=11+Math.random()*10, th=Math.random()*TAU, ph=Math.acos(rnd());      // scattered dust start
+    anatStart[gi*3]=rr*Math.sin(ph)*Math.cos(th); anatStart[gi*3+1]=rr*Math.sin(ph)*Math.sin(th)*.7; anatStart[gi*3+2]=rr*Math.cos(ph); gi++; };
+  const shell=(cx,cy,cz,rx,ry,rz,c,p)=>{ const th=Math.random()*TAU, ph=Math.acos(rnd());
+    push(cx+Math.sin(ph)*Math.cos(th)*rx, cy+Math.cos(ph)*ry, cz+Math.sin(ph)*Math.sin(th)*rz, c, p); };
+  const blob=(cx,cy,cz,rx,ry,rz,c,p)=>{ const th=Math.random()*TAU, ph=Math.acos(rnd()), r=Math.cbrt(Math.random());
+    push(cx+r*Math.sin(ph)*Math.cos(th)*rx, cy+r*Math.cos(ph)*ry, cz+r*Math.sin(ph)*Math.sin(th)*rz, c, p); };
+  const strand=(ax,ay,az,bx,by,bz,jit,c,p)=>{ const t=Math.random();
+    push(ax+(bx-ax)*t+rnd(jit), ay+(by-ay)*t+rnd(jit), az+(bz-az)*t+rnd(jit), c, p); };
+  const cBone=[0.78,0.76,0.68], cCord=[0.55,0.95,1.00], cCran=[1.00,0.80,0.32],
+        cCerv=[0.50,0.80,1.00], cThor=[1.00,0.55,0.78], cHeart=[1.00,0.40,0.42],
+        cLung=[0.94,0.60,0.66], cSkin=[0.28,0.38,0.54];
+  for(let k=0;k<1500;k++) shell(0,6.0,0.2, 2.0,2.35,2.0, cBone, 0);                 // skull shell
+  for(let k=0;k<500;k++)  strand(0,3.5,0, 0,4.6,0.1, 0.55, cBone, 0);               // neck
+  for(let nv=0;nv<22;nv++){ const yv=4.8-nv*0.47;                                    // vertebral column (discs)
+    for(let k=0;k<86;k++){ const a=Math.random()*TAU, r=0.42+rnd(0.06);
+      push(Math.cos(a)*r, yv+rnd(0.05), -0.95+Math.sin(a)*r*0.5, cBone, 1); } }
+  for(let k=0;k<1000;k++){ const t=Math.random(); push(rnd(0.16), 4.7+(-5.2-4.7)*t, -0.55+rnd(0.10), cCord, 1); }   // spinal cord
+  const cran=[[0.3,6.4,1.6],[0.7,6.3,1.8],[1.2,5.9,1.5],[1.5,5.5,1.2],[2.0,6.0,0.1],[0.5,4.9,1.4],[0.5,0.6,1.1],[1.7,3.9,0.3],[0.4,5.6,1.5]];
+  cran.forEach(tg=>{ for(const side of [1,-1]) for(let k=0;k<150;k++) strand(0,4.5,-0.1, side*tg[0],tg[1],tg[2], 0.05, cCran, 2); });   // 9 cranial pairs
+  for(let k=0;k<8;k++){ const y=4.4-k*0.13; const tg=k<5?[2.0,y-0.4,0.4]:[3.4+(k-5)*0.35,y-1.6-(k-5)*0.8,0.5];     // cervical (blue) → arms
+    for(const side of [1,-1]) for(let j=0;j<60;j++) strand(0,y,-0.55, side*tg[0],tg[1],tg[2], 0.05, cCerv, 3); }
+  for(let k=0;k<12;k++){ const y=3.0-k*0.5;                                                                          // thoracic (pink) → ribs
+    for(const side of [1,-1]) for(let j=0;j<55;j++) strand(0,y,-0.55, side*(2.2+0.1*Math.sin(k)),y-0.15,0.9, 0.05, cThor, 3); }
+  for(let k=0;k<500;k++) blob(0.4,0.6,0.9, 0.55,0.6,0.5, cHeart, 3);                                                 // heart (vagus target)
+  for(const side of [1,-1]) for(let k=0;k<450;k++) blob(side*1.3,1.3,0.4, 0.7,1.1,0.6, cLung, 3);                    // lungs
+  const caps=[[0,4.6,0,0,3.4,0,0.72],[0,3.3,0,0,-1.0,0,2.2],[0,-1.0,0,0,-5.5,0,1.8],[-3.4,3.3,0,3.4,3.3,0,0.6],
+    [-3.4,3.3,0,-4.3,-0.2,0,0.5],[3.4,3.3,0,4.3,-0.2,0,0.5],[-4.3,-0.2,0,-4.0,-3.6,0.2,0.42],[4.3,-0.2,0,4.0,-3.6,0.2,0.42]];
+  while(gi<NA){ const c=caps[(Math.random()*caps.length)|0], t=Math.random();                                       // faint upper-body shell
+    const bx=c[0]+(c[3]-c[0])*t, by=c[1]+(c[4]-c[1])*t, bz=c[2]+(c[5]-c[2])*t, a=Math.random()*TAU;
+    push(bx+Math.cos(a)*c[6], by+rnd(0.05), bz+Math.sin(a)*c[6], cSkin, 4); }
+})();
+const anatGeo=new THREE.BufferGeometry();
+anatGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(anatStart),3));
+anatGeo.setAttribute('color',new THREE.BufferAttribute(anatCol,3));
+const anatMat=new THREE.PointsMaterial({size:.07, map:sprite, vertexColors:true, transparent:true, opacity:0, depthWrite:false, blending:THREE.AdditiveBlending});
+const anatPoints=new THREE.Points(anatGeo,anatMat); anatPoints.visible=false; scene.add(anatPoints);
+const ANAT_PARTS=[
+  {rs:1.085, re:1.140},   // 0 skull + neck   (sec15)
+  {rs:1.075, re:1.140},   // 1 spine + cord   (sec15)
+  {rs:1.143, re:1.205},   // 2 cranial nerves (sec16)
+  {rs:1.205, re:1.265},   // 3 spinal nerves + organs (sec17)
+  {rs:1.235, re:1.283},   // 4 body silhouette (sec17)
+];
+function updateAnatomy(g){
+  const vis=g>BODY_START?Math.min(1,(g-BODY_START)/0.045):0;    // fades in with the chapter, holds to the end
+  anatMat.opacity=vis*0.95; anatPoints.visible=vis>0.01;
+  if(vis<=0.01) return;
+  const ap=anatGeo.attributes.position.array;
+  for(let i=0;i<NA;i++){ const w=ANAT_PARTS[anatPart[i]];
+    const f=easeIO(Math.min(1,Math.max(0,(g-w.rs)/(w.re-w.rs)))); const i3=i*3;
+    ap[i3]  =anatStart[i3]  +(anatTarget[i3]  -anatStart[i3])*f;
+    ap[i3+1]=anatStart[i3+1]+(anatTarget[i3+1]-anatStart[i3+1])*f;
+    ap[i3+2]=anatStart[i3+2]+(anatTarget[i3+2]-anatStart[i3+2])*f;
+  }
+  anatGeo.attributes.position.needsUpdate=true;
+  anatPoints.rotation.copy(points.rotation);       // rotate the whole anatomy with the brain (drag to explore)
+}
+
+/* ---- overlays that ride on top of the neuron hold ---- */
+// Myelin (glia station ~0.167-0.25): light the sheath bands along the axon.
+function applyMyelin(g){
+  if(g<0.40||g>0.505) return;               // late glia (oligo/Schwann form) → holds through the AP
+  const col=geo.attributes.color.array;
+  const s=Math.min(1,(g-0.40)/0.02)*Math.min(1,(0.505-g)/0.02);
+  for(let i=Math.floor(N*0.48);i<Math.floor(N*0.86);i++){
+    const t=(i-N*0.48)/(N*0.38);
+    if(Math.sin(t*22)>0.35){                       // this point sits in a sheath band
+      col[i*3]  = col[i*3]  +(0.78-col[i*3])*s;     // toward violet myelin
+      col[i*3+1]= col[i*3+1]+(0.71-col[i*3+1])*s*0.6;
+      col[i*3+2]= Math.min(1,col[i*3+2]+s*0.35);
+    }
+  }
+  geo.attributes.color.needsUpdate=true;
+}
+// Action-potential pulse: a red spike sweeps the axon, its head position driven
+// by apProg — the SAME value that scrubs the 2D graph tracer, so they stay locked.
+// A short trailing comet makes the travel direction read clearly.
+function applyPulse(){
+  if(apProg<=0.02||apProg>=0.98) return;
+  const col=geo.attributes.color.array;
+  const head=apProg, w=0.12, i0=Math.floor(N*0.48), i1=Math.floor(N*0.86);
+  for(let i=i0;i<i1;i++){
+    const af=(i-i0)/(i1-i0);
+    const d=head-af;                              // signed: >0 = behind the head (tail)
+    const ad=Math.abs(d);
+    if(ad<w){
+      const s=(1-ad/w)*(d>=0?1:0.55);             // fuller ahead-glow, softer tail
+      col[i*3]=Math.min(1,col[i*3]+s*0.95);
+      col[i*3+1]=col[i*3+1]*(1-s*0.62);
+      col[i*3+2]=col[i*3+2]*(1-s*0.42);
+    }
+  }
+  geo.attributes.color.needsUpdate=true;
+}
+// Synapse shimmer (~0.417-0.5): terminal points shimmer toward blue.
+function applySynapse(g,time){
+  if(g<0.5714||g>0.6429) return;            // synapse section (i8)
+  const col=geo.attributes.color.array;
+  for(let i=Math.floor(N*0.86);i<N;i++){
+    const tw=0.5+0.5*Math.sin(time*6 + i*0.3);
+    col[i*3]=col[i*3]*(1-tw*.3);
+    col[i*3+1]=Math.min(1,col[i*3+1]+tw*.2);
+    col[i*3+2]=Math.min(1,col[i*3+2]+tw*.5);
+  }
+  geo.attributes.color.needsUpdate=true;
+}
+
+/* ---- camera framing per stage (dolly + target) ---- */
+const camKeys=[
+  {at:0.00,  z:15,  y:0,   fov:52, lx:-3.5},
+  {at:0.07,  z:11,  y:0,   fov:50, lx:-4.2},   // soma close (soma sits at world x≈-5.5)
+  {at:0.145, z:11,  y:.10, fov:49, lx:-3.2},   // dendrites
+  {at:0.215, z:10.5,y:.05, fov:48, lx:-1.5},   // axon extends right — pan to follow
+  {at:0.285, z:10.5,y:0,   fov:48, lx:-0.2},   // terminals — whole cell framed, recentre
+  {at:0.357, z:10,  y:.15, fov:48},   // glia gather round
+  {at:0.4286,z:9.6, y:.12, fov:46},   // action potential — whole cell, pulse runs
+  {at:0.50,  z:9.2, y:.05, fov:46},   // end AP / enter membrane
+  {at:0.521, z:6.8, y:0,   fov:44},   // settled facing the bilayer (hold begins) — sits back to show the wide sheet
+  {at:0.553, z:6.8, y:0,   fov:44},   // hold bilayer face-on while ions flow + it breathes
+  {at:0.5714,z:8,   y:-.10,fov:46},   // pull back out to the neuron
+  {at:0.61,  z:8,   y:-.22,fov:46},   // synapse
+  {at:0.6429,z:16,  y:0,   fov:56},   // network wide
+  {at:0.72,  z:14,  y:.40, fov:52},   // brain assembly begins
+  {at:0.93,  z:13,  y:.50, fov:50},
+  {at:1.00,  z:12,  y:.50, fov:50},
+  {at:1.071, z:13,  y:1.1, fov:52},   // brain complete — lifts into the head
+  {at:1.143, z:17,  y:2.6, fov:54},   // skull + spine + cord form
+  {at:1.214, z:20,  y:3.1, fov:55},   // cranial nerves reach the face
+  {at:1.286, z:22,  y:3.3, fov:56},   // full upper-body anatomy — grab & explore
+  {at:1.357, z:22,  y:3.3, fov:56},
+  {at:1.429, z:22,  y:3.3, fov:56},
+];
+let camTargetY=0, camTargetX=0;
+function lerpCam(g){
+  let a=camKeys[0],b=camKeys[camKeys.length-1];
+  for(let i=0;i<camKeys.length-1;i++){ if(g>=camKeys[i].at&&g<=camKeys[i+1].at){a=camKeys[i];b=camKeys[i+1];break;} }
+  const t=easeIO((g-a.at)/((b.at-a.at)||1));
+  camera.position.z=a.z+(b.z-a.z)*t;
+  camTargetY=a.y+(b.y-a.y)*t;
+  camTargetX=(a.lx||0)+((b.lx||0)-(a.lx||0))*t;   // pan to follow the building neuron
+  camera.fov=a.fov+(b.fov-a.fov)*t; camera.updateProjectionMatrix();
+}
+
+/* pointer parallax + drag-to-rotate */
+const ptr={x:0,y:0}, drag={on:false,x:0,y:0}, rot={x:0,y:0,tx:0,ty:0};
+addEventListener('pointermove',e=>{ ptr.x=(e.clientX/innerWidth-.5); ptr.y=(e.clientY/innerHeight-.5);
+  if(drag.on){ rot.ty+=(e.clientX-drag.x)*0.005; rot.tx+=(e.clientY-drag.y)*0.005;
+    rot.tx=Math.max(-.6,Math.min(.6,rot.tx)); drag.x=e.clientX; drag.y=e.clientY; } },{passive:true});
+addEventListener('pointerdown',e=>{drag.on=true;drag.x=e.clientX;drag.y=e.clientY;});
+addEventListener('pointerup',()=>drag.on=false);
+
+const lerp=(a,b,n)=>a+(b-a)*n;
+let autoSpin=0, camLookX=0;
+function render(time){
+  const t=time*0.001; gTime=t;
+  writeMorph(scrollG);
+  applyMyelin(scrollG);
+  applyPulse();
+  applySynapse(scrollG,t);
+  updateGlia(scrollG);
+  updateAnatomy(scrollG);
+  lerpCam(scrollG);
+  autoSpin+=0.0016;
+  rot.x=lerp(rot.x,rot.tx + ptr.y*0.25,0.06);
+  rot.y=lerp(rot.y,rot.ty + ptr.x*0.4,0.06);
+  const memK=memAmt(scrollG);
+  const anatK=Math.min(1,Math.max(0,(scrollG-BODY_START)/0.05));     // in the anatomy chapter
+  const spinSup=Math.max(memK,anatK);        // suppress AUTO-spin in the membrane + anatomy
+  const dragSup=memK;                         // suppress DRAG only in the membrane (bilayer must face us) — anatomy stays drag-rotatable
+  points.rotation.y=autoSpin*(1-spinSup)+rot.y*(1-dragSup);
+  points.rotation.x=rot.x*(1-dragSup);
+  camera.position.y=lerp(camera.position.y,camTargetY,0.08);
+  camLookX=lerp(camLookX,camTargetX,0.08);
+  camera.lookAt(camLookX,camTargetY*0.3,0);
+  renderer.render(scene,camera);
+  requestAnimationFrame(render);
+}
+function resize(){ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight); measure(); }
+addEventListener('resize',resize); resize();
+requestAnimationFrame(render);
+
+/* =====================================================================
+   PART B — scroll wiring, HUD, reveals, cursor, diagrams (zero-dep)
+   ===================================================================== */
+const main=document.getElementById('main');
+const pbar=document.getElementById('pbar'), pct=document.getElementById('pctnum'), stageName=document.getElementById('stagename');
+const cue=document.getElementById('cue');
+
+const stations=[...document.querySelectorAll('.station')];
+const apSec=document.querySelector('[data-name="Action Potential"]');   // for scroll-sync
+const gliaSec=document.querySelector('[data-name="Glia & Myelin"]');    // glia scrub sync
+const railStages=[
+  ['0','Void'],['1','Neuron'],['2','Glia'],['3','Signal'],['4','Synapse'],['5','Network'],['6','Brain'],['7','Body']
+];
+const rail=document.getElementById('rail');
+railStages.forEach(([id,label])=>{ const d=document.createElement('div');d.className='seg';d.dataset.stage=id;
+  d.innerHTML='<i></i><span>'+label+'</span>'; rail.appendChild(d); });
+const segs=[...rail.children];
+
+function onScroll(){
+  scrollG=physToVirtG(scrollY);
+  // HUD shows true page progress (0–100%); morph-g (scrollG) can now exceed 1 in the body chapter.
+  const pageProg=Math.min(1,scrollY/((scrollHpx-innerHeight)||1));
+  pbar.style.transform='scaleX('+pageProg+')';
+  pct.textContent=String(Math.round(pageProg*100)).padStart(2,'0');
+  cue.style.opacity=scrollG>0.02?'0':'1';
+  let cur='0',name='Void';
+  const mid=scrollY+innerHeight/2;
+  for(const s of stations){ if(s.offsetTop<=mid){ cur=s.dataset.stage; name=s.dataset.name; } }
+  stageName.textContent=name;
+  segs.forEach(sg=>sg.classList.toggle('on',sg.dataset.stage===cur));
+
+  // action-potential scrub: 0 the moment the tall section pins, 1 when it releases.
+  // Spread across ~200vh of scroll, so the spike moves slowly and deliberately.
+  // Drives the axon pulse + graph tracer in lockstep (resting → spike → resting).
+  if(apSec){
+    const r=apSec.getBoundingClientRect(), span=r.height-innerHeight;
+    apProg=span>0?Math.min(1,Math.max(0,-r.top/span)):0;
+    drawAPFrame(apProg);
+  }
+  // glia scrub: 0 as its tall section pins, 1 as it releases — reveals the 5 cells in turn.
+  if(gliaSec){
+    const r=gliaSec.getBoundingClientRect(), span=r.height-innerHeight;
+    gliaProg=span>0?Math.min(1,Math.max(0,-r.top/span)):0;
+    drawGliaFrame(gliaProg);
+  }
+}
+addEventListener('scroll',onScroll,{passive:true});
+
+/* split-text builder (preserves <br> and .ol words) */
+document.querySelectorAll('.split').forEach(el=>{
+  const parts=el.innerHTML.split(/<br\s*\/?>/i); el.innerHTML='';
+  parts.forEach((line,li)=>{
+    const tmp=document.createElement('span'); tmp.innerHTML=line;
+    const olText=tmp.querySelector('.ol')?tmp.querySelector('.ol').textContent:null;
+    tmp.textContent.split(/\s+/).filter(Boolean).forEach(word=>{
+      const w=document.createElement('span'); w.className='w';
+      const inner=document.createElement('span'); inner.className='i';
+      if(olText&&olText.includes(word)) inner.classList.add('ol');
+      inner.textContent=word; w.appendChild(inner); el.appendChild(w); el.appendChild(document.createTextNode(' '));
+    });
+    if(li<parts.length-1) el.appendChild(document.createElement('br'));
+  });
+});
+
+/* reveal on enter; counters roll; split plays; diagram cards animate. */
+const io=new IntersectionObserver((es)=>{es.forEach(e=>{
+  if(!e.isIntersecting) return;
+  const st=e.target;
+  st.querySelectorAll('.split').forEach(s=>s.classList.add('in'));
+  st.querySelectorAll('.rv').forEach(r=>r.classList.add('in'));
+  st.querySelectorAll('.card').forEach(c=>c.classList.add('in'));
+  st.querySelectorAll('[data-count]').forEach(c=>{ if(c._done)return; c._done=true;
+    const to=+c.dataset.count, suf=c.dataset.suffix||'', pre=c.dataset.prefix||'', t0=performance.now(), dur=1300;
+    (function step(now){ const p=Math.min(1,(now-t0)/dur), e2=1-Math.pow(1-p,3);
+      c.textContent=pre+Math.round(e2*to)+suf; if(p<1)requestAnimationFrame(step); })(t0);
+  });
+});},{threshold:0, rootMargin:'-25% 0px -25% 0px'});   // fires when a section reaches
+stations.forEach(s=>io.observe(s));                     // the middle band — works at any height
+
+/* ---- build diagram internals ---- */
+const SVGNS='http://www.w3.org/2000/svg';
+const svgEl=(n,at)=>{ const e=document.createElementNS(SVGNS,n);
+  for(const k in at) e.setAttribute(k,at[k]); return e; };
+
+// MEMBRANE: phospholipid bilayer + hourglass channel proteins with a real pore,
+// and ions that travel THROUGH the pore. The Na/K pump cycle runs continuously
+// (the resting pump never stops), the gated channels flow their single ion.
+(function buildMembrane(){
+  const lg=document.getElementById('lipids'),
+        cg=document.getElementById('channels'),
+        ig=document.getElementById('ions');
+  if(!lg||!cg||!ig) return;
+
+  const channels=[
+    {cx:132,type:'pump',label:'Na⁺/K⁺ pump'},
+    {cx:266,type:'na',  label:'Na⁺ channel'},
+    {cx:380,type:'k',   label:'K⁺ channel'},
+  ];
+  const isProt=x=>channels.some(c=>Math.abs(x-c.cx) < (c.type==='pump'?32:24));
+
+  // bilayer: outer heads at y104 (tails down), inner heads at y160 (tails up)
+  for(let x=20;x<=460;x+=16){
+    if(isProt(x)) continue;
+    lg.appendChild(svgEl('line',{x1:x,y1:107,x2:x-2.4,y2:131,class:'lt'}));
+    lg.appendChild(svgEl('line',{x1:x,y1:107,x2:x+2.4,y2:131,class:'lt'}));
+    lg.appendChild(svgEl('circle',{cx:x,cy:104,r:4.4,class:'lh'}));
+    lg.appendChild(svgEl('line',{x1:x,y1:157,x2:x-2.4,y2:133,class:'lt'}));
+    lg.appendChild(svgEl('line',{x1:x,y1:157,x2:x+2.4,y2:133,class:'lt'}));
+    lg.appendChild(svgEl('circle',{cx:x,cy:160,r:4.4,class:'lh'}));
+  }
+
+  // channel proteins — two facing funnel walls leaving a central pore
+  channels.forEach(c=>{
+    const cx=c.cx, mw=c.type==='pump'?24:19, g=c.type==='pump'?7:5, bw=9;
+    cg.appendChild(svgEl('path',{class:'cwall',
+      d:`M${cx-mw},90 C${cx-mw},112 ${cx-g},120 ${cx-g},132 C${cx-g},144 ${cx-mw},152 ${cx-mw},174 L${cx-mw-bw},174 L${cx-mw-bw},90 Z`}));
+    cg.appendChild(svgEl('path',{class:'cwall',
+      d:`M${cx+mw},90 C${cx+mw},112 ${cx+g},120 ${cx+g},132 C${cx+g},144 ${cx+mw},152 ${cx+mw},174 L${cx+mw+bw},174 L${cx+mw+bw},90 Z`}));
+    cg.appendChild(svgEl('line',{x1:cx,y1:96,x2:cx,y2:168,class:'cpore'}));
+    const lab=svgEl('text',{x:cx,y:84,class:'clab'}); lab.textContent=c.label; cg.appendChild(lab);
+    if(c.type==='pump'){ const atp=svgEl('text',{x:cx,y:192,class:'clab','font-size':'8',fill:'#66f0c0'});
+      atp.textContent='ATP'; cg.appendChild(atp); }
+  });
+
+  // ions passing through the pores
+  function ion(cx,cy,kind,dir,delay){
+    const grp=svgEl('g',{class:`mion ${kind} ${dir}`,style:`transform-box:fill-box;animation-delay:${delay}s`});
+    grp.appendChild(svgEl('circle',{cx,cy}));
+    const tx=svgEl('text',{x:cx,y:cy}); tx.textContent=kind==='na'?'Na':'K';
+    grp.appendChild(tx); ig.appendChild(grp);
+  }
+  // pump: 3 Na⁺ out (start inside, move up) : 2 K⁺ in (start outside, move down)
+  [0,.9,1.8].forEach(d=> ion(132,176,'na','up',d));
+  [.45,1.35].forEach(d=> ion(132,84,'k','dn',d));
+  // Na⁺ channel: influx (down)
+  [.2,1.0,1.8].forEach(d=> ion(266,84,'na','dn',d));
+  // K⁺ channel: efflux (up)
+  [.6,1.5].forEach(d=> ion(380,176,'k','up',d));
+})();
+
+// ACTION-POTENTIAL GRAPH: scrubbed by scroll via drawAPFrame(p), locked to the
+// axon pulse. p maps along the voltage curve; phase bands, flux badges and the
+// threshold/peak callouts light based on where the tracer sits.
+const apPath=document.getElementById('apcurve');
+const apLen=(apPath&&apPath.getTotalLength)?apPath.getTotalLength():0;
+const apTr=document.getElementById('aptracer');
+const apRevealRect=document.getElementById('apRevealRect');
+const apBandDepo=document.querySelector('.apband.depo'),
+      apBandRepo=document.querySelector('.apband.repo'),
+      apBandHyper=document.querySelector('.apband.hyper');
+const apPhases=[...document.querySelectorAll('#apgraph .phase')];
+const apPeak=document.getElementById('apPeak'), apThr=document.getElementById('apThr');
+const apFluxNa=document.getElementById('fluxNa'), apFluxK=document.getElementById('fluxK');
+const litToggle=(el,on)=>{ if(el) el.classList.toggle('lit',on); };
+function drawAPFrame(p){
+  if(!apLen) return;
+  const pt=apPath.getPointAtLength(Math.min(1,Math.max(0,p))*apLen);
+  apTr.setAttribute('cx',pt.x); apTr.setAttribute('cy',pt.y);
+  if(apRevealRect) apRevealRect.setAttribute('width', Math.max(0, pt.x));   // reveal to tracer
+  const inDepo =pt.x>=126 && pt.x<178,
+        inRepo =pt.x>=178 && pt.x<232,
+        inHyper=pt.x>=232 && pt.x<340;
+  if(apBandDepo)  apBandDepo.classList.toggle('active',inDepo);
+  if(apBandRepo)  apBandRepo.classList.toggle('active',inRepo);
+  if(apBandHyper) apBandHyper.classList.toggle('active',inHyper);
+  apPhases.forEach(l=>{ const ph=l.dataset.ph;
+    l.classList.toggle('lit',(ph==='depo'&&inDepo)||(ph==='repo'&&inRepo)||(ph==='hyper'&&inHyper)); });
+  litToggle(apThr, p>0.02 && pt.y<=189 && pt.x<300);   // crossed threshold on the way up/down
+  litToggle(apPeak, pt.y<=54);                          // near the +50 peak
+  litToggle(apFluxNa, inDepo);
+  litToggle(apFluxK, inRepo);
+}
+
+// GLIA STAGED REVEAL: as the glia section scrubs, cells light one by one and the
+// "now forming" card names the active cell + the ability it gives the neuron.
+const gliaMeta=[
+  {name:'Astrocyte',       role:'Sustain · glue of the brain',          give:'Gives the neuron a fed, stable home + the blood–brain barrier.'},
+  {name:'Microglia',       role:'Defend · resident immune cell',        give:'Patrols, clears debris, and prunes weak synapses.'},
+  {name:'Oligodendrocyte', role:'Insulate · central nervous system',    give:'Myelin in brain & cord, so signals leap node to node.'},
+  {name:'Schwann cell',    role:'Insulate · peripheral nervous system', give:'Myelin out in the body’s nerves, for fast peripheral signals.'},
+  {name:'Ependymal',       role:'Line · ventricle wall',                give:'Circulates cerebrospinal fluid, cushioning and bathing the tissue.'},
+];
+const gliaRows=[...document.querySelectorAll('.glia-list li')];
+const gaName=document.getElementById('gaName'), gaRole=document.getElementById('gaRole'),
+      gaGive=document.getElementById('gaGive'), gaNum=document.getElementById('gaNum');
+function drawGliaFrame(p){
+  const started=p>0.02;
+  const active=Math.min(4,Math.max(0,Math.floor(p/0.19)));
+  let connected=0;
+  gliaRows.forEach((li,k)=>{
+    const on=started && p>=k*0.19;         // cell k starts forming at gliaProg = k*0.19
+    if(on) connected++;
+    li.classList.toggle('lit',on);
+    li.classList.toggle('active', on && k===active);
+  });
+  if(gaNum) gaNum.textContent=String(connected);
+  if(!gaName) return;
+  if(!started){ gaName.textContent='Drifting dust…'; gaRole.textContent='scroll to condense the first glial cell'; gaGive.textContent=''; }
+  else { const m=gliaMeta[active]; gaName.textContent=m.name; gaRole.textContent=m.role; gaGive.textContent=m.give; }
+}
+
+/* custom cursor */
+const ring=document.getElementById('ring'),dot=document.getElementById('dot');
+const cm={x:innerWidth/2,y:innerHeight/2}, cr2={x:cm.x,y:cm.y};
+addEventListener('pointermove',e=>{cm.x=e.clientX;cm.y=e.clientY;},{passive:true});
+document.querySelectorAll('a,.chip,.parts li,.card').forEach(el=>{
+  el.addEventListener('pointerenter',()=>ring.classList.add('hot'));
+  el.addEventListener('pointerleave',()=>ring.classList.remove('hot'));
+});
+let crs=1;
+(function cursor(){ cr2.x=lerp(cr2.x,cm.x,.2); cr2.y=lerp(cr2.y,cm.y,.2);
+  crs=lerp(crs, ring.classList.contains('hot')?1.6:1, .2);
+  ring.style.transform=`translate(${cr2.x}px,${cr2.y}px) translate(-50%,-50%) scale(${crs})`;
+  dot.style.transform=`translate(${cm.x}px,${cm.y}px) translate(-50%,-50%)`;
+  requestAnimationFrame(cursor); })();
+
+measure(); onScroll();
+addEventListener('load',()=>{ measure(); onScroll(); });   // re-measure once fonts settle
+</script>
+</body>
+</html>
