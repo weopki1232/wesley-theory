@@ -68,27 +68,20 @@ def set_state(pg, shot, spin=False):
                 [shot, spin])
 
 
-def prove_patch_applied(pages):
+def probe(pg):
     """Read the thing under test back FROM THE LIVE SYSTEM. REPLACE THIS.
 
-    "No effect" and "no experiment" produce identical output. If the two builds
-    report the same value here, the comparison is void and must not be reported
-    as a null result.
+    Return a value that must differ between the two builds. Read it back from
+    the running page: a constant lifted from the source file only proves the
+    file says what you think it says, not that the browser acted on it.
 
     Example for a renderer flag:
-        v = pg.evaluate('() => {const c=document.querySelector("canvas");'
-                        'const g=c.getContext("webgl2")||c.getContext("webgl");'
-                        'return g.getParameter(g.SAMPLES);}')
+        return pg.evaluate('() => {const c=document.querySelector("canvas");'
+                           'const g=c.getContext("webgl2")||c.getContext("webgl");'
+                           'return g.getParameter(g.SAMPLES);}')
     If nothing can be read back, run a control so extreme it cannot fail to show.
     """
-    vals = {}
-    for tag, pg in pages.items():
-        vals[tag] = pg.evaluate('() => window.__probe && window.__probe()')
-    if len(set(map(str, vals.values()))) == 1:
-        raise SystemExit('both builds report %r -- the patch under test did not '
-                         'apply, so every number below would be meaningless'
-                         % list(vals.values())[0])
-    return vals
+    return pg.evaluate('() => window.__probe && window.__probe()')
 # ------------------------------------------------------------------------------
 
 MEASURE = """async (ms) => {
@@ -118,6 +111,32 @@ def open_page(pw, path):
     pg.wait_for_function(READY, timeout=60000)
     pg.wait_for_timeout(3000)
     return br, pg, errs
+
+
+def prove_patch_applied(pw):
+    """Refuse to measure two builds that are not actually different.
+
+    "No effect" and "no experiment" produce identical output. If both builds
+    report the same probe value the comparison is void, and the null result it
+    produces would read exactly like a real one -- which is the failure this
+    whole template exists to prevent.
+
+    This is its own pass, ahead of any timing, for two reasons. It costs two
+    page loads and exits before spending the rounds rather than after. And it
+    cannot be folded into the measurement loop as a dict of open pages: refusal
+    2 at the top forbids holding both browsers open at once.
+    """
+    vals = {}
+    for tag, path in BUILDS:
+        br, pg, _ = open_page(pw, path)
+        vals[tag] = probe(pg)
+        br.close()
+    print('probe: %s' % ', '.join('%s=%r' % kv for kv in sorted(vals.items())))
+    if len(set(map(str, vals.values()))) == 1:
+        raise SystemExit('both builds report %r -- the patch under test did not '
+                         'apply, so every number below would be meaningless'
+                         % list(vals.values())[0])
+    return vals
 
 
 def fps(pg, shot):
@@ -156,6 +175,9 @@ def settled_shot(pg, shot, limit=40):
 def main():
     raw = {(tag, s): [] for tag, _ in BUILDS for s in SHOTS}
     with sync_playwright() as pw:
+        # Nothing below is worth running if the two builds are the same build.
+        prove_patch_applied(pw)
+
         for rnd in range(ROUNDS):
             # A B on even rounds, B A on odd: each build gets the cold slot and
             # the warm slot equally often, so a within-round trend cancels

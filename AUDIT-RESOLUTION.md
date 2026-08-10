@@ -29,6 +29,7 @@ outer counterparts, it is **not** a pure subset because of `plugin.json`.
 
 | Item | What changed |
 |---|---|
+| F1 | `prove_patch_applied()` was defined and never called — the skill's own headline rule, shipped unenforced. Now a pre-flight pass that runs before any timing (see below) |
 | A1 | Dependency list rebuilt from actual imports; `requirements.txt` added |
 | A2 | System-dependency table added (LibreOffice, Poppler, Pandoc, Tesseract, Chrome) |
 | A3 | README no longer claims `obsidian-graph-coloring` hard-codes paths — it is templated |
@@ -63,10 +64,29 @@ Beyond the audit, every machine-specific path in the package was replaced with a
   ...` resolves to the local `office/validators/` directory. The audit also missed
   four doc-only packages, now listed as optional in `requirements.txt`.
 
+## How F1 was fixed
+
+The audit judged this a restructure of the measurement loop, because the old signature
+took a dict of simultaneously-open pages and the harness deliberately never has one —
+refusal 2 at the top of the template forbids holding two browsers open at once, having
+measured 9.8 fps for a build that really runs at 38.5.
+
+It didn't need the restructure. The function is now split in two:
+
+- `probe(pg)` — the `REPLACE THIS` hook, returns one value read back from the live page.
+- `prove_patch_applied(pw)` — a **pre-flight pass**: open build A, probe, close; open
+  build B, probe, close; raise if the two values match. Called as the first statement
+  inside `main()`'s playwright block.
+
+Two page loads, the measurement loop untouched, and it aborts *before* spending the
+rounds instead of after.
+
+Verified against real Chrome, three cases: two different builds return `{base: 4, new: 0}`
+and proceed; the same file passed as both builds raises `SystemExit`; and `main()` itself
+aborts on identical builds with no round ever printed — that last one is what proves the
+call site exists, since the first two would pass even if `main()` still ignored it.
+
 ## Still open
 
-- **F1** — `prove_patch_applied()` in `skills/honest-measurement/templates/ab_perf.py:71`
-  is defined and never called, so the template silently skips the one guard its own
-  documentation calls mandatory. Confirmed real. Wiring it in needs a restructure
-  (probe each build as its page opens in round 0, then assert the values differ), and
-  that change is pending review rather than applied blind.
+Nothing from the audit. `PACKAGE-IMPROVEMENTS.md`'s G2 remains deliberately rejected —
+see above.
