@@ -262,3 +262,24 @@ removes the confound instead of trying to model it.
 ---
 
 <!-- APPEND NEW ENTRIES BELOW THIS LINE. Never delete or rewrite an entry. -->
+
+## 17. A poll budget counted in turns gets *tighter* as the machine gets busier
+
+A prototype local-first finance app — a personal side project, not a shipped
+product — had an integration harness that polled with `for (let i = 0; i < 60; i++) { if
+(await predicate()) return; await flush() }` — a budget of 60 event-loop turns,
+not of time. That inverts the thing a timeout is for. A Dexie write that lands
+in ~40 turns idle can need more than 60 with something else eating the CPU, so
+the suite was most likely to go red exactly when a red result is least
+believable — and the failure looks like a real assertion failure, not like load.
+Observed: `db.budgets.count() === 1` timed out twice in about ten runs with a
+real headless Chrome working alongside, and never once on an idle machine.
+
+It also wasted a full round of blame. The first comparison ran the baseline with
+`npx vitest run` and the changed tree with `npm test`, so "baseline 4/4 clean,
+mine 1-in-3 failing" looked like a regression I had caused. It was the harness,
+not the diff — and the invalid comparison was mine.
+
+**Rule.** Poll against a wall-clock deadline (`Date.now() + ms`), never a turn
+count. And when a flake appears mid-change, re-run baseline and change with the
+*identical* command before concluding anything about which one owns it.

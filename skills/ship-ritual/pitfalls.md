@@ -55,7 +55,8 @@ yourself — that is a delete on the guarded drive.
 
 ## 3. Step 4's "verify, do not assume" can itself be a false pass
 
-2026-08-09, Money Trees v1.0. To prove the E: mirror held the real history I
+2026-08-09, releasing v1.0 of a prototype finance app — a personal side project,
+not a shipped product. To prove the archive mirror held the real history I
 compared committed tree hashes on both sides. PowerShell split the unquoted
 `rev-parse HEAD^{tree}` into two arguments, git failed on both sides, and
 rev-parse echoed the literal string `HEAD^` back each time — so the equality
@@ -79,11 +80,11 @@ answer is usually the additive sync, not corruption.
 
 ## 4. Step 3 says "commit" — it does not say *which repo*, and step 6 stops one index short
 
-2026-08-09, found by auditing the Money Trees release an hour after reporting
+2026-08-09, found by auditing that same prototype's release an hour after reporting
 it done. Two separate misses, same shape: the ritual named a target, I hit that
 target, and the neighbouring one went untouched.
 
-**The repo.** `money-trees` is its own git repo nested inside `Projects\`, which
+**The repo.** The app was its own git repo nested inside `<PROJECTS_ROOT>`, which
 is also a repo. I committed and tagged the nested one, and reported "Projects
 git history updated" — which was step 4's sync *copying* `Projects\.git` to E:,
 not my changes entering it. The parent's HEAD was still the previous day's

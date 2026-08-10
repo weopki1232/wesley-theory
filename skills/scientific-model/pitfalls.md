@@ -110,3 +110,34 @@ Format:
 - Bonus: those three numbers are also a free correctness check on the whole transform chain. 176/110/47 mm is a real hand; had the scale or remap been wrong they would not have been.
 - When adding a capability to a shared camera rig, make neutrality algebraic rather than careful: the orbit is weighted by `orb`, which is 0 for every key that does not opt in, and at `orb=0` the expressions reduce exactly to the old dolly-and-pan.
 - Caught: 2026-07-25 (neuron-to-brain v13)
+
+## Volcanoes / stratovolcano cross-section
+
+### Layers in a stratovolcano must dip OUTWARD, parallel to the flank
+- WRONG: drawing the internal layering as horizontal bands, or as concentric outlines scaled about the apex. Horizontal bands describe sedimentary basement, not a cone; uniform scaling about the apex does not stay inside a CONCAVE flank, so the bands bulge out of the mountain near the base and have to be clipped away, leaving layering only near the summit.
+- RIGHT: generate every layer from the SAME flank function, offset downward. With the flank as `x = cx ± span*((y-apexY-d)/H)^1.55`, layer k is just `d = d_k`. Parallelism is then algebraic, not draughtsmanship, and it survives any later change to the profile exponent.
+- Why it matters: the outward dip IS the definition of "strato-". Every stripe is one past eruption. Get it wrong and the diagram teaches the opposite of the word.
+- Caught: 2026-08-06 (volcano presentation)
+
+### A sill drawn like live magma reads as a second lava flow
+- WRONG: drawing the sill in the same glowing orange gradient as the active conduit, on the SAME flank as the surface lava flow. Two orange streaks a few tens of px apart, one labelled "sill" and one "lava flow", and nothing tells them apart. The whole teaching point of the sill/dike pair was lost.
+- RIGHT: two separate fixes, both needed. (1) Colour by STATE, not by material: a sill is magma that spread between beds and FROZE, so it gets solidified-rock colour (dull red-brown), while the conduit and the dike feeding an active flank vent stay incandescent. (2) Separate them in space — put the sill deep inside the edifice and the surface flow high on the outside, so they can never be confused even at a glance.
+- Bonus: a sill against dark brown beds also needs a dark backing stroke, or it vanishes into them at presentation distance.
+- Caught: 2026-08-06 (volcano presentation)
+
+### A magma chamber keeps coming out as a perfect oval
+- WRONG (twice in one session): "irregular" bezier blobs whose control points all bulge the same way. The result is a smooth ellipse — a balloon under the mountain. A radial gradient inside makes it worse by hiding what little irregularity survives.
+- RIGHT: the outline needs genuine CONCAVITIES, not just varying convex bulges. Alternate the control-point offsets in and out along the top edge so the silhouette actually dips between lobes.
+- Caught: 2026-08-06 (volcano presentation). Same failure mode as the generic "draw it from my mental image" trap — a mental image of a magma chamber is an oval.
+
+### An eruption column: one mass, not a stack, and give it room
+- WRONG #1: concentric ellipses of increasing width stacked upward. Reads as flying saucers, or a wedding cake — because the gaps between them are visible and each one has a hard elliptical edge.
+- WRONG #2: keeping the column inside the mountain's own viewBox. A column that fits in the frame with the volcano is not a column; real ones tower far above the edifice. Extend the viewBox above zero (`viewBox="0 -200 1200 1080"`) and let it dominate.
+- RIGHT: one continuous silhouette with a NARROW gas-thrust neck at the vent, widening as it decelerates, spreading into an umbrella where it reaches neutral buoyancy. Then break the outline with `feTurbulence` + `feDisplacementMap` (scale ~38) — a smooth silhouette reads as clip-art no matter how good the shape is.
+- Caught: 2026-08-06 (volcano presentation)
+
+### A numbered marker must sit ON its feature, not beside it
+- WRONG: placing the "conduit" marker at x=664 when the conduit spans x=578-624. It landed on the cone body next to the pipe, so the number labelled the rock, not the pipe.
+- RIGHT: after placing markers, check each coordinate against the actual geometry of the thing it names. Cheap to verify, and invisible until someone reads the diagram carefully — which is exactly what a teacher does.
+- General: numbered markers + a separate legend beat inline text labels whenever the diagram has to work in two languages, because label length stops being a layout constraint.
+- Caught: 2026-08-06 (volcano presentation)
