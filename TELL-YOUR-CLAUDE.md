@@ -9,11 +9,13 @@ npm install -g @anthropic-ai/claude-code
 Then run `claude` once and log in.
 
 After that, unzip `claude-setup-for-friend-2026-08-05.zip` (anywhere is fine, e.g. your Downloads
-folder), open Claude Code **in that unzipped folder**, and paste everything between the lines below.
+folder). Open Claude Code **in that unzipped folder** if you can — but the note below tells Claude
+how to find the folder either way. Paste everything between the lines.
 
 ---
 
-I received a Claude Code setup package from a friend, and I'm in its folder now. Please set it up for me:
+I have a Claude Code setup package from a friend — the unzipped folder `claude-setup-for-friend`
+(check my current folder first; if it's not here, look in my Downloads). Please set it up for me:
 
 1. Read its `README.md` and `WEBSITE-LEARNING.md` first so you know what's in it.
 
