@@ -1,0 +1,24 @@
+# Normalise line endings to LF in the index AND in the working tree.
+#
+# Why this file exists. Git for Windows installs with core.autocrlf=true, which
+# stores LF in the index but writes CRLF into the working tree. That has two costs
+# for this repo:
+#
+#   1. The shell scripts break. A .sh file checked out as CRLF fails under bash
+#      with "\r: command not found" -- so a Windows clone could hand someone
+#      scripts that do not run, while the copy on GitHub looks perfectly fine.
+#
+#   2. Comparisons become noise. These skills are maintained as ordinary files in
+#      ~/.claude/skills, which git never touches, so they stay LF. Diffing them
+#      against a CRLF working tree reports every line of every file as changed.
+#      That is not a cosmetic annoyance: it buries the handful of files that are
+#      genuinely out of date, and it invites a "fix" that rewrites everything.
+#
+# eol=lf makes checkout deterministic for everyone who clones, whatever their own
+# core.autocrlf happens to be.
+
+* text=auto eol=lf
+
+# Binary assets: never inspected, never converted. text=auto already detects these,
+# but stating it means a corrupt PNG can never be blamed on line-ending conversion.
+*.png binary
