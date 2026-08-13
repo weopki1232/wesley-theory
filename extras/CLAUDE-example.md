@@ -16,11 +16,22 @@ because something went wrong once.
 
 - **Confirm before anything irreversible.** Warn and get explicit approval before
   deleting, overwriting, force-pushing, or any action that cannot be undone.
+- **Clean up only your own mess.** Remove the imports, variables and functions that
+  *your* change orphaned. Pre-existing dead code, stale comments and odd formatting
+  get **mentioned, not deleted** — every changed line should trace to what was
+  actually asked for.
 - **<ARCHIVE_DRIVE> is delete-guarded.** Never delete or mirror-delete anything
   there — sync is ADDITIVE only. It holds archive-only projects that exist nowhere
   else.
-- **Budget-lean by default.** Prefer self-made assets (SVG, code) over fetching,
-  avoid subagents unless clearly needed, check feasibility/cost before large jobs.
+- **Budget mode is OFF by default.** Do not ration work, refuse subagents, skip web
+  fetches, warn about cost, or trim scope for budget reasons unless it is switched
+  on. Default to whatever approach does the job best.
+  - **Switch it on** when the user says so — "budget mode on", "keep it lean" — and
+    only then. It lasts for that session; never carry it into the next one, and
+    never turn it on by inference.
+  - **While on:** prefer self-made assets (SVG, code) over fetching, avoid subagents
+    unless clearly needed, check feasibility/cost before large jobs, skip
+    unrequested extras.
 - **Windows PowerShell 5.1 environment.** No heredocs, cp1252 stdout (avoid
   printing non-ASCII from scripts), keep script sources pure ASCII where glyphs
   matter.

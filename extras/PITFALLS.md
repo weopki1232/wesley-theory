@@ -233,17 +233,18 @@ intentional ones out loud, and leave `ignore-*` commands to the user.
 Not duplicated here. Those catalogues already exist and are working:
 - `~/.claude/skills/honest-measurement/pitfalls.md` - 17 rules (harness lying, warm-up
   bias, counterbalancing, liveness, proving the patch applied)
-- `~/.claude/skills/scientific-model/pitfalls.md` - 22 rules (anatomy correctness)
+- `~/.claude/skills/scientific-model/pitfalls.md` - 21 rules (anatomy correctness)
 - `~/.claude/skills/ship-ritual/pitfalls.md` - 4 rules (release recording)
 Read those before benchmarking or before drawing anything real.
 
 ---
 
-## I. Publishing a repo to a public host (4 recorded failures, all 2026-08-10)
+## I. Publishing a repo to a public host (6 recorded failures, all 2026-08-10)
 
-All four came from one afternoon spent putting this package on GitHub. Publishing
+All six came from one afternoon spent putting this package on GitHub. Publishing
 is unusually unforgiving: the mistakes are visible to strangers before you notice
-them, and several of them cannot be taken back by editing.
+them, and several of them cannot be taken back by editing. The last two are about
+the copies left behind rather than the repo itself.
 
 **I1. Never seed a git identity from a nearby repo's config.**
 A fresh clone had no `user.email`, so the address was copied from a neighbouring
@@ -299,3 +300,37 @@ local setting. Until then compare with `diff --strip-trailing-cr`, or ask git
 directly with `git ls-files --eol`.
 -> A line-ending detector that reports "all clean" is the easiest thing in this
 file to get wrong. Test it against a file you know has CRLF before believing it.
+
+**I5. Deleting a duplicate does not stop the thing that creates duplicates.**
+A stale second copy of this package was deleted, with permission, to end a
+five-way drift between the live skills, the public repo and three local copies.
+The same evening the nightly backup script swept the working clone straight back
+onto the archive drive under a new name - 466 files, full `.git` - and logged it
+as an ordinary "6 folder(s) changed". Nothing failed. The clone was gitignored by
+the parent repo, which is exactly what made it feel handled: the sweep is a
+`Get-ChildItem -Directory` walk and reads no `.gitignore`. It also landed on the
+delete-guarded drive, so the copy could not be removed by the same script that
+made it.
+-> After deleting a copy, find and disable the process that produced it, in the
+same sitting. Ask what runs on a schedule that touches this path, then check
+whether it has already re-run.
+-> Gitignoring a folder protects it from `git add` and says nothing to robocopy, a
+sweep, or a backup task. Exclusions have to be repeated in every tool that walks
+the tree.
+-> A sync whose target cannot be deleted from needs its exclusions right the
+first time. Additive-only is a safety property in one direction and a ratchet in
+the other.
+
+**I6. A restore command that was never run is not a restore path.**
+The backup script had been copying `Projects\.git` to the archive drive for weeks
+with `Restore with: git clone <ARCHIVE_DRIVE>\Projects\.git <target>` written in
+the comment beside it, and a note claiming the route was verified rather than
+assumed. Setting the same backup up for `~/.claude` meant actually running it -
+and it fails: the drive is FAT32, which records no ownership, so git aborts with
+"detected dubious ownership". Every project's history had a documented recovery
+route that does not execute, and it fails hardest on a fresh machine with no git
+config, which is the only situation anyone would reach for it.
+-> The working form is `git -c safe.directory='*' clone <ARCHIVE_DRIVE>\Projects\.git <target>`.
+-> A documented recovery path counts as verified only once it has been executed
+end to end, on a target you then opened. Anything else is a plan, and it belongs
+in the file labelled as one.

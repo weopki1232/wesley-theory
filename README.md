@@ -1,8 +1,15 @@
-# Claude Code Setup Package
+# Wesley Theory
 
 A complete copy of my Claude Code skills + instructions, plus install links for the plugins that can't be copied directly. Follow the steps in order — takes about 15 minutes.
 
-> **Version 2026-08-05.** New here? Just work through the steps below in order. *(If you already installed the July version of this package: the only change is `skills/` — two new skills, `honest-measurement` and `scientific-model`, plus a refreshed `study-deck`. Re-copy `skills/` and skip steps 2–4, you've already done them.)*
+> **Version 2026-08-13.** New here? Just work through the steps below in order.
+>
+> *Already installed an earlier version?* Three things changed:
+> 1. **`skills/` — seven new working-discipline skills** (`debug-discipline`, `scrutinize`, `grill-me`, `prototype`, `handoff`, `writing-skills`, `wait-what`), adapted from [mattpocock/skills](https://github.com/mattpocock/skills) and [thananon/9arm-skills](https://github.com/thananon/9arm-skills). Re-copy `skills/`. Why these and not the other 40-odd on offer: `SKILL-REVIEW-LOG.md`.
+> 2. **`extras/shell-guard.ps1` gained a second contract** — it now also blocks six destructive git commands (`reset --hard`, force-push, `clean -f`, `branch -D`, `checkout -- <path>`, bare `restore`). Re-copy it.
+> 3. **`extras/PITFALLS.md` and `extras/CLAUDE-example.md`** picked up two more publishing incidents and a surgical-changes rule.
+>
+> Steps 2 and 3 (plugins, MCP servers) don't change; skip them if you've done them. Step 4 does — see item 2 above.
 
 > Everything here assumes **Claude Code** is already installed. If not:
 > `npm install -g @anthropic-ai/claude-code` then run `claude` once to log in.
@@ -34,10 +41,19 @@ Restart Claude Code. Type `/` and you should see them all. What you get:
 | `ship-ritual` | **New.** The seven-step close-out that makes finished work findable three months later: gates, rollback copy, tag, additive archive mirror, index line, project-page status, memory. Deliberately machine-specific — fill in the placeholders or drop the steps you don't have |
 | `honest-measurement` | **New.** Stops Claude believing a change worked because its own benchmark said so. The seven *rules* are domain-neutral — they apply to any "is this faster / smoother / did my optimisation work" question. The shipped *templates* are browser/WebGL/canvas-specific; for other domains take the rules and write your own harness. Its `pitfalls.md` is 17 real cases where a harness reported a clean number while measuring the wrong thing — the most useful file in this package if you ever profile anything |
 | `scientific-model` | **New.** Makes diagrams of *real* things correct rather than merely plausible — anatomy, biology, molecules. Forces Claude to fetch a reference and actually look at it before drawing, then render-and-check the result. Ships 22 caught errors + 5 cached reference images. Pairs with `study-deck` for lessons where the picture has to be right |
+| `debug-discipline` | **New.** The order of operations for finding a fault: check the recorded traps *before* building a repro, get one red command, narrow the fail path one knob at a time, try to *disprove* the hypothesis, keep the ledger on disk so it survives compaction |
+| `scrutinize` | **New.** Cold review, inline in the current session rather than in a subagent that has to re-derive everything. Asks whether the change should exist at all before reading it line by line, and traces past the edited lines into the code either side |
+| `grill-me` | **New.** Interviews a vague idea into decisions you can defend — a design tree asked in rounds, only the questions whose prerequisites are settled, each with a recommended answer attached. Looks facts up itself; never answers a decision for you |
+| `prototype` | **New.** Throwaway code that answers the one question talking cannot settle ("how should this feel?"). Either a self-contained HTML state demo or several UI variants that must disagree about *structure*, not colour |
+| `handoff` | **New.** End-of-session note so the next session can pick the work up: done vs not-done by name, and every claim tagged `[verified: <command>]` or `[assumed]`. Written somewhere durable, not the temp directory |
+| `writing-skills` | **New.** How to write a SKILL.md that actually changes behaviour — starting with the container question: does this belong in a skill at all, or in `CLAUDE.md`, or in a hook? Most answers are "not a skill" |
+| `wait-what` | **New.** Re-pitch something that didn't land. Works out how far back comprehension failed and supplies the missing premise, instead of just cutting words |
 | `docx` / `pptx` / `xlsx` / `pdf` | Anthropic's official Office skills — create/edit real Word, PowerPoint, Excel, PDF files |
 | `obsidian-markdown` / `obsidian-bases` / `obsidian-cli` / `json-canvas` / `defuddle` | kepano's Obsidian authoring skills |
 | `obsidian-graph-coloring` | My vault-workflow skill, already templated — fill in the `<VAULT_ROOT>` and `<OBSIDIAN_EXE>` placeholders inside `SKILL.md`, or skip it if you don't use Obsidian |
 | `vault-pdf-ingest` | Same workflow, but this one names **real paths** on my machine (including an archive drive). Rewrite those to your own, or skip it |
+
+**Why these skills and not others.** `SKILL-REVIEW-LOG.md` records every third-party skill considered, what was adopted, and — more usefully — the stated reason each rejected one was dropped.
 
 **Placeholders, not my paths.** No skill in this package names a folder on my machine. Where a skill needs a location, it uses a marker you fill in once:
 
@@ -46,9 +62,10 @@ Restart Claude Code. Type `/` and you should see them all. What you get:
 | `<VAULT_ROOT>` | Your Obsidian vault folder | `vault-pdf-ingest`, `obsidian-graph-coloring`, `study-deck` |
 | `<OBSIDIAN_EXE>` | Path to the Obsidian executable | `obsidian-graph-coloring` |
 | `<DOWNLOADS>` | Where you keep scanned/hand-drawn reference PDFs | `study-deck` |
-| `<ARCHIVE_DRIVE>` | Where finished work gets filed (e.g. an external drive) | `vault-pdf-ingest`, `thai-pdf`, `ship-ritual` |
+| `<ARCHIVE_DRIVE>` | Where finished work gets filed (e.g. an external drive) | `vault-pdf-ingest`, `thai-pdf`, `ship-ritual`, `handoff` |
+| `<PROJECTS_ROOT>` | Where your project folders live | `handoff` |
 
-Grep the installed skills for `<` to find them all. `honest-measurement` and `scientific-model` need nothing — no paths at all. `dark-motion-site` and `study-deck` point at reference builds that ship in `demos/`, using repo-relative paths that already work.
+Grep the installed skills for `<` to find them all. `honest-measurement`, `scientific-model` and the seven working-discipline skills need nothing — no paths at all, except the two markers above in `handoff`. `dark-motion-site` and `study-deck` point at reference builds that ship in `demos/`, using repo-relative paths that already work.
 
 **Original sources** (to get updates later, instead of my copies):
 - Office skills (docx/pptx/xlsx/pdf): https://github.com/anthropics/skills
@@ -139,7 +156,9 @@ Verify with `/mcp` after restarting Claude Code.
 
 In `extras/`:
 - **`PITFALLS.md`** — the one I'd copy first. Every entry is a real recorded mistake with its date, grouped into eight classes (editing files, N-place changes, claiming things are true, Bash-vs-PowerShell, encoding, browser QA, working with the user, measurement). Copy to `~/.claude/PITFALLS.md`.
-- **`shell-guard.ps1`** — a `PreToolUse` hook that **blocks** six of those pitfalls outright instead of hoping Claude remembers them: Windows backslashes in Bash, `cd X && …`, `grep -P` with unicode ranges, `jq` when it isn't installed, non-ASCII writes under cp1252, and `--headless=new`. It exits 2 with an explanation, which Claude reads and works around. Copy to `~/.claude/tools/` and wire it up with the JSON block at the top of `PITFALLS.md`.
+- **`shell-guard.ps1`** — a `PreToolUse` hook that **blocks** instead of hoping Claude remembers. It exits 2 with an explanation, which Claude reads and works around. Copy to `~/.claude/tools/` and wire it up with the JSON block at the top of `PITFALLS.md`. Two contracts, deliberately kept apart:
+  - **Recorded traps** — six pitfalls from the catalogue that fail *silently*: Windows backslashes in Bash, `cd X && …`, `grep -P` with unicode ranges, `jq` when it isn't installed, non-ASCII writes under cp1252, and `--headless=new`. A rule is only added here after something has actually gone wrong.
+  - **Destructive git** — `reset --hard`, force-push, `clean -f`, `branch -D`, `checkout -- <path>`, and bare `restore`. These *succeed* and discard work, so the rule can't wait for an incident: the incident that would earn it is the one that destroys the work. Commit messages are blanked before scanning, so a message that merely *mentions* one of these isn't blocked. Adapted from [mattpocock's git-guardrails](https://github.com/mattpocock/skills).
 - **`CLAUDE-example.md`** — a de-personalised `CLAUDE.md`: a few absolute safety rules plus judgment-calls that can't be hooked, and the method for growing your own from your transcripts.
 - **`statusline.ps1`** — custom status line showing model, color-coded context %, and session cost. Windows/PowerShell only. Copy to `~/.claude/statusline.ps1` and add the `statusLine` block from `settings-example.json`.
 - **`themes/warm-amber.json`** — my custom warm-amber theme. Copy to `~/.claude/themes/` and set `"theme": "custom:warm-amber"` in settings.
