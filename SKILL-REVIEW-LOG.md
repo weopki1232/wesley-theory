@@ -68,6 +68,19 @@ Two more were **folded in rather than installed**:
   skill was read again from source. The verdict held, but for a different and
   stronger reason — and the old argument was struck out rather than left to be
   reused.
+- **Re-judging the rejections is only half the job — re-read what you *kept*.** The
+  budget rule was removed and the rejected skills were revisited, but the seven
+  adopted ones were not. One of them, `scrutinize`, had been adopted while the rule
+  was still active and shipped `inline, without spawning a subagent` in its
+  description. Upstream says nothing about subagents; that was the budget rule
+  wearing a plausible-sounding context argument, and it read as a design decision
+  rather than an artifact. Now fixed — inline is still where a review *starts*, for
+  the reason that survives without the budget rule (the session already holds the
+  context a cold reviewer must re-derive), but delegating is named as a real option
+  with real reasons, and doing both is the normal case. **A rule that gets written
+  into a skill outlives the session that scoped it and cannot be switched off** —
+  which is why `extras/CLAUDE-example.md` now says budget reasoning lives in
+  `CLAUDE.md` only.
 
 ### Note on `karpathy-guidelines`
 

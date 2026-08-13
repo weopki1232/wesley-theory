@@ -1,19 +1,32 @@
 ---
 name: scrutinize
-description: Review a change, plan, or file cold - inline, without spawning a subagent. Use when asked to review, check, sanity-check, critique or "look over" a diff, a script, a plan, or something just written, and before shipping anything non-trivial. Asks whether the change should exist at all, traces the real path past the edited lines, verifies each claim against the code, and returns severity-ordered findings with evidence and a one-line verdict.
+description: Outsider-perspective review of a change, plan, or file. Use when asked to review, check, sanity-check, critique or "look over" a diff, a script, a plan, or something just written, and before shipping anything non-trivial. Asks whether the change should exist at all, traces the real path past the edited lines, verifies each claim against the code, and returns severity-ordered findings with evidence and a one-line verdict.
 ---
 
 # Scrutinize
 
 Adapted from thananon/9arm-skills `engineering/scrutinize` (2026-08-13).
 
-**This runs inline, in this session.** That is the point of it. The ECC reviewers
-(`code-reviewer`, `code-simplifier`, `silent-failure-hunter`, `security-reviewer`)
-each start cold and re-derive context this session already has - including why the
-change was made, what was already ruled out, and what the user actually asked for.
-Use this first. Escalate to an ECC agent, or to `/code-review ultra`, when the
-review needs a full sweep of a large or unfamiliar codebase, or a second opinion
-genuinely uncontaminated by this session's reasoning.
+## Inline or delegated
+
+**Start inline, in this session** - not because a subagent is expensive, but
+because a reviewer that starts cold re-derives what this session already holds:
+why the change was made, what was already ruled out, what the user actually asked
+for. On a diff written minutes ago, that context *is* most of the review.
+
+**Delegate deliberately, for what inline cannot give:**
+
+- **Independence.** This session's reasoning is the thing under test, and you
+  cannot un-know it. A fresh reviewer can. Worth it for anything about to ship
+  or be handed to someone else.
+- **Breadth.** A sweep of a large or unfamiliar codebase - the ECC reviewers
+  (`code-reviewer`, `security-reviewer`, `silent-failure-hunter`,
+  `code-simplifier`), or `/code-review ultra` for a full multi-agent pass.
+- **A second opinion on this review.** Inline first, then delegated, beats
+  either alone.
+
+Running both is the normal case for anything non-trivial. Neither is the
+expensive option to be talked out of.
 
 ## Stance
 

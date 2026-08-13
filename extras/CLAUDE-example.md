@@ -32,6 +32,13 @@ because something went wrong once.
   - **While on:** prefer self-made assets (SVG, code) over fetching, avoid subagents
     unless clearly needed, check feasibility/cost before large jobs, skip
     unrequested extras.
+  - **Budget reasoning lives in this file only — never inside a skill.** A
+    session-scoped rule written into a skill outlives the session and cannot be
+    switched off, so it rations work forever with nothing left to explain why. Real
+    case: `scrutinize` was adopted while an always-on budget rule was active and
+    shipped "inline, without spawning a subagent" in its description — a restriction
+    its upstream never had, and one nobody could see was a budget artifact. If a
+    skill's wording would change when budget mode flips, it belongs here instead.
 - **Windows PowerShell 5.1 environment.** No heredocs, cp1252 stdout (avoid
   printing non-ASCII from scripts), keep script sources pure ASCII where glyphs
   matter.
