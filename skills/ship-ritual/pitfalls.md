@@ -105,3 +105,38 @@ clean says nothing about the repo containing it. And when adding a vault page,
 grep the vault for every file that lists pages of that type before declaring
 step 6 done — `wiki/index.md` and `wiki/projects-index.md` are two places, and
 the count in each is checkable against `ls wiki/projects/`.
+
+---
+
+## 5. A rename is an N-place change, and steps 5-6 are where nobody counts
+
+2026-08-17, found while closing out an unrelated release on the same project. A
+public repo had been renamed four days earlier. The remote redirected, the clone
+kept working, every command succeeded — and **four days later four records still
+named the old repo**: the projects index twice (including a present-tense "now
+lives at"), and the vault project page in both its `mirror:` frontmatter and its
+Architecture section. The same release had grown the package from 18 skills to
+25, and all four places still said 18.
+
+Worse, the status had gone three ways: the project page said `shipped`, while
+`wiki/index.md` and `wiki/vault-state.md` both said `archived` — for a repo being
+actively pushed to that same afternoon. Entry 1 predicted this and named the
+vault page as the one to trust least; here the vault page was **right** and the
+two indices above it were wrong. So the direction of rot is not fixed, and
+"trust the code, then the index, then the vault" is not a reliable ordering.
+Checking them against each other is.
+
+**Cause.** A rename produces no failure anywhere. Nothing breaks, no gate goes
+red, and the redirect actively hides it — so steps 5 and 6 are never *prompted*
+by a symptom the way a broken build prompts step 1. It surfaced only because a
+release touching the same project ran the full ritual.
+
+**Rule.** Treat a rename, a version bump, or a count change (skills, nodes,
+files) as an N-place change and count it: `grep -c` the **old** name across the
+projects index, the vault project page, `wiki/index.md`, `wiki/vault-state.md`
+and your agent's memory files, before and after, and state both numbers. The
+pass condition is zero *present-tense* mentions — past-tense history ("renamed
+from X on <date>") should stay, so the count will not reach zero and a bare
+count is not the test. And when two records disagree about status, resolve it
+against the thing itself (is anyone still pushing to it?), not against a
+precedence rule about which file usually lies.
