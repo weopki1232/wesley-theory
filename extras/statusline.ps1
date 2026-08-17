@@ -52,17 +52,20 @@ if (-not $root) { $root = Join-Path $env:USERPROFILE '.claude' }
 $ep = Join-Path $root 'estimate.json'
 if (Test-Path $ep) {
     try { $est = (Get-Content $ep -Raw) | ConvertFrom-Json } catch { $est = $null }
-    if ($est -and ($null -ne $est.est_cost -or $null -ne $est.est_tokens)) {
-        # auto-clear safety net: hide a stale estimate (ts older than TTL)
-        $fresh = $true
+    $estCost = $est.est_cost
+    if ($null -eq $estCost) { $estCost = $est.est_cost_usd }   # tolerate alias
+    if ($est -and ($null -ne $estCost -or $null -ne $est.est_tokens)) {
+        # auto-clear safety net: hide a stale estimate (older than TTL).
+        # If ts is missing (malformed write), age by file mtime so it still expires.
         $ttlMin = 45
         if ($null -ne $est.ts) {
             $ageMin = ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - [long]$est.ts) / 60
-            if ($ageMin -gt $ttlMin) { $fresh = $false }
+        } else {
+            $ageMin = ((Get-Date) - (Get-Item $ep).LastWriteTime).TotalMinutes
         }
-        if ($fresh) {
+        if ($ageMin -le $ttlMin) {
             $bits = @()
-            if ($null -ne $est.est_cost)   { $bits += ('~${0:N2}' -f [double]$est.est_cost) }
+            if ($null -ne $estCost)        { $bits += ('~${0:N2}' -f [double]$estCost) }
             if ($null -ne $est.est_tokens) { $bits += ('{0}k' -f [math]::Round([double]$est.est_tokens / 1000)) }
             $costPart += '  ' + (Fg $cEst ("$gClock est " + ($bits -join ' / ')))
         }
