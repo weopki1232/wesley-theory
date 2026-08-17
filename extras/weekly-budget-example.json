@@ -1,0 +1,15 @@
+{
+  "_comment": "Copy to ~/.claude/weekly-budget.json and edit. Delete the _comment keys.",
+
+  "_reset_dow": "Day of the week your plan's weekly limit resets, in LOCAL time. Find it in /usage. Omit or null = fall back to a rolling 7-day window.",
+  "reset_dow": "Thursday",
+
+  "_reset_hour": "Hour of that day, 0-23, LOCAL time. 20 = 8pm.",
+  "reset_hour": 20,
+
+  "_scale": "Percent-of-plan per USD of API-equivalent spend. DO NOT hand-edit. Written for you by: powershell -File ~/.claude/tools/weekly-usage.ps1 -CalibratePct <the % /usage currently shows>. While this is null the statusline shows an amber dollar figure instead of a percentage.",
+  "scale": null,
+
+  "_cal_note": "Stamped automatically when you calibrate, so you can see how old the calibration is.",
+  "cal_note": null
+}

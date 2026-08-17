@@ -2,14 +2,15 @@
 
 A complete copy of my Claude Code skills + instructions, plus install links for the plugins that can't be copied directly. Follow the steps in order — takes about 15 minutes.
 
-> **Version 2026-08-13.** New here? Just work through the steps below in order.
+> **Version 2026-08-17.** New here? Just work through the steps below in order.
 >
-> *Already installed an earlier version?* Three things changed:
+> *Already installed an earlier version?* Four things changed:
 > 1. **`skills/` — seven new working-discipline skills** (`debug-discipline`, `scrutinize`, `grill-me`, `prototype`, `handoff`, `writing-skills`, `wait-what`), adapted from [mattpocock/skills](https://github.com/mattpocock/skills) and [thananon/9arm-skills](https://github.com/thananon/9arm-skills). Re-copy `skills/`. Why these and not the other 40-odd on offer: `SKILL-REVIEW-LOG.md`.
 > 2. **`extras/shell-guard.ps1` gained a second contract** — it now also blocks six destructive git commands (`reset --hard`, force-push, `clean -f`, `branch -D`, `checkout -- <path>`, bare `restore`). Re-copy it.
 > 3. **`extras/PITFALLS.md` and `extras/CLAUDE-example.md`** picked up two more publishing incidents and a surgical-changes rule.
+> 4. **`extras/` gained the weekly-budget status line segment** — the `wk ~26%` on the end of my status line. New `weekly-usage.ps1` and `weekly-budget-example.json`, and `statusline.ps1` now displays it. Optional, Windows-only, and it needs one calibration reading from `/usage` before the percentage means anything; re-copy `statusline.ps1` if you want it.
 >
-> Steps 2 and 3 (plugins, MCP servers) don't change; skip them if you've done them. Step 4 does — see item 2 above.
+> Steps 2 and 3 (plugins, MCP servers) don't change; skip them if you've done them. Step 4 does — see items 2 and 4 above.
 
 > Everything here assumes **Claude Code** is already installed. If not:
 > `npm install -g @anthropic-ai/claude-code` then run `claude` once to log in.
@@ -160,7 +161,10 @@ In `extras/`:
   - **Recorded traps** — six pitfalls from the catalogue that fail *silently*: Windows backslashes in Bash, `cd X && …`, `grep -P` with unicode ranges, `jq` when it isn't installed, non-ASCII writes under cp1252, and `--headless=new`. A rule is only added here after something has actually gone wrong.
   - **Destructive git** — `reset --hard`, force-push, `clean -f`, `branch -D`, `checkout -- <path>`, and bare `restore`. These *succeed* and discard work, so the rule can't wait for an incident: the incident that would earn it is the one that destroys the work. Commit messages are blanked before scanning, so a message that merely *mentions* one of these isn't blocked. Adapted from [mattpocock's git-guardrails](https://github.com/mattpocock/skills).
 - **`CLAUDE-example.md`** — a de-personalised `CLAUDE.md`: a few absolute safety rules plus judgment-calls that can't be hooked, and the method for growing your own from your transcripts.
-- **`statusline.ps1`** — custom status line showing model, color-coded context %, and session cost. Windows/PowerShell only. Copy to `~/.claude/statusline.ps1` and add the `statusLine` block from `settings-example.json`.
+- **`statusline.ps1`** — custom status line showing model, color-coded context %, session cost, and (optionally) weekly plan usage. Windows/PowerShell only. Copy to `~/.claude/statusline.ps1` and add the `statusLine` block from `settings-example.json`.
+- **`weekly-usage.ps1` + `weekly-budget-example.json`** — the `wk ~26%` segment at the end of my status line. Copy the script to `~/.claude/tools/` (next to `shell-guard.ps1`) and the config to `~/.claude/weekly-budget.json`. It sums the token usage in your own transcripts since your plan's weekly reset, prices it, and caches the number; the status line reads the cache and refreshes it in the background at most every 10 minutes. Two things to know before you trust the number:
+  - **It is uncalibrated until you calibrate it,** and it says so by showing an amber dollar figure (`wk ~$42`) instead of a percentage. That figure is what your tokens *would* cost on the API — not what your plan charges you, which is nothing extra. To turn it into a percentage: open `/usage`, read the weekly percentage it shows you, then run `powershell -File ~/.claude/tools/weekly-usage.ps1 -CalibratePct <that number>`. That one reading teaches it the ratio and the segment turns into `wk ~26%`, green under 60%, yellow under 85%, red above.
+  - **Re-calibrate if Anthropic changes your limits.** A promo or plan change moves the ceiling without moving the dollar cost, so an old calibration quietly under- or over-reports. Set `reset_dow` / `reset_hour` from `/usage` too, or it falls back to a rolling 7-day window that won't line up with your real reset.
 - **`themes/warm-amber.json`** — my custom warm-amber theme. Copy to `~/.claude/themes/` and set `"theme": "custom:warm-amber"` in settings.
 - **`settings-example.json`** — my full settings.json (sanitized) as a reference.
 - **`vault-colors.md`** — a slash command for Obsidian graph coloring (goes in `~/.claude/commands/`; Obsidian users only).

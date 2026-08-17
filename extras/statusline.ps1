@@ -69,6 +69,43 @@ if (Test-Path $ep) {
     }
 }
 
+# ---- weekly budget (cache written by tools\weekly-usage.ps1) ----
+$wkPart = ''
+$wkCache = Join-Path $root 'cache\weekly-usage.json'
+$wkStale = $true
+if (Test-Path $wkCache) {
+    try { $wk = (Get-Content $wkCache -Raw) | ConvertFrom-Json } catch { $wk = $null }
+    if ($wk -and $null -ne $wk.ts) {
+        $wkAgeMin = ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - [long]$wk.ts) / 60
+        $wkStale = ($wkAgeMin -gt 30)
+        if ($null -ne $wk.pct) {
+            $wc = if     ($wk.pct -lt 60) { 78  }   # green
+                  elseif ($wk.pct -lt 85) { 220 }   # yellow
+                  else                    { 196 }   # red
+            $wkPart = Fg $wc ('wk ~{0}%' -f [int]$wk.pct)
+        } elseif ($null -ne $wk.cost_usd) {
+            # uncalibrated: show estimated API-equivalent cost in amber
+            $wkPart = Fg $cEst ('wk ~${0:N0}' -f [double]$wk.cost_usd)
+        }
+    }
+}
+if ($wkStale) {
+    # refresh in the background, at most once per 10 minutes
+    $wkLock = Join-Path $root 'cache\weekly-refresh.lock'
+    $spawn = $true
+    if (Test-Path $wkLock) {
+        if (((Get-Date) - (Get-Item $wkLock).LastWriteTime).TotalMinutes -lt 10) { $spawn = $false }
+    }
+    if ($spawn) {
+        try {
+            Set-Content -Path $wkLock -Value (Get-Date -Format 'o') -Force
+            Start-Process powershell -WindowStyle Hidden -ArgumentList @(
+                '-NoProfile', '-File', (Join-Path $root 'tools\weekly-usage.ps1')
+            ) | Out-Null
+        } catch {}
+    }
+}
+
 # ---- context % + bar ----
 $ctxPart = ''
 $tp = $data.transcript_path
@@ -105,4 +142,5 @@ if ($tp -and (Test-Path $tp)) {
 $parts = @($modelPart, $dirPart)
 if ($ctxPart) { $parts += $ctxPart }
 $parts += $costPart
+if ($wkPart) { $parts += $wkPart }
 [Console]::Out.Write(($parts -join $sep))

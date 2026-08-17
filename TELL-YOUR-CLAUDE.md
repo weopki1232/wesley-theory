@@ -39,7 +39,7 @@ I have a Claude Code setup package from a friend — the folder `wesley-theory`
 4. Set up my `~/.claude/settings.json` using `extras/settings-example.json` as reference. Merge carefully with whatever settings I already have and show me the diff before saving. Two things matter here:
    - Add the `extraKnownMarketplaces` entries.
    - **Add the ECC env vars `ECC_HOOK_PROFILE` and `ECC_DISABLED_HOOKS` exactly as the README lists them.** The ECC plugin I'm about to install ships "continuous learning" hooks that automatically write to my memory files in the background. These env vars switch those hooks off. Do this *before* I install the plugin, so it never gets a chance to overwrite anything of mine.
-   - Skip the statusLine and theme parts unless I say I want them — they're Windows/PowerShell-specific extras.
+   - Skip the statusLine and theme parts unless I say I want them — they're Windows/PowerShell-specific extras. Same for the weekly-budget segment (`extras/weekly-usage.ps1`): only set it up if I ask, and if I do, walk me through the one-time `/usage` calibration in the README rather than leaving me an uncalibrated number that looks authoritative.
 
 5. **Install the guard hook** — `extras/shell-guard.ps1` goes in `~/.claude/tools/`, and the `PreToolUse` JSON block at the top of `extras/PITFALLS.md` goes in my settings. Also copy `extras/PITFALLS.md` to `~/.claude/PITFALLS.md`. This is the part people skip: the hook blocks six silent-failure traps *and* six destructive git commands before they run, instead of hoping you remember them. Windows/PowerShell only — if I'm on Mac or Linux, tell me so and read the rules as a checklist instead.
 
