@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>สำหรับครู — โจ๊ะตอง</title>
+<meta name="description" content="หน้าสำหรับครู: สร้างห้องเรียน จัดผังโต๊ะด้วยการลาก และดูรายการจองของนักเรียน">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧑‍🏫</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mali:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">🧑‍🏫</span>
+      <span>
+        <span class="brand-name">โจ๊ะตอง</span>
+        <span class="brand-sub">หน้าสำหรับครู</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="เมนูหลัก">
+      <a href="index.html">จองโต๊ะ</a>
+      <a href="teacher.html" aria-current="page">สำหรับครู</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <h1>จัดผังห้อง <span class="pun">ลากวางได้เลย</span></h1>
+    <p>สร้างห้อง ลากโต๊ะมาวางให้เหมือนห้องจริง กดบันทึก แล้วนักเรียนก็จองตามผังนี้ได้ทันที</p>
+  </section>
+
+  <!-- ── เลือก/สร้างห้อง ── -->
+  <section class="card">
+    <h2><span aria-hidden="true">🏫</span> ห้องเรียนของฉัน</h2>
+    <div class="row">
+      <div class="field">
+        <label for="room-select">เลือกห้องที่จะแก้ไข</label>
+        <select id="room-select"></select>
+      </div>
+    </div>
+    <div class="btn-group" style="margin-top:14px">
+      <button type="button" class="btn btn-primary" id="new-room">+ สร้างห้องใหม่</button>
+      <button type="button" class="btn btn-sm" id="rename-room">เปลี่ยนชื่อ/คำอธิบาย</button>
+      <button type="button" class="btn btn-sm btn-danger" id="delete-room">ลบห้องนี้</button>
+    </div>
+  </section>
+
+  <!-- ── ตัวแก้ไขผัง ── -->
+  <section class="card" id="editor-card" hidden>
+    <h2><span aria-hidden="true">🧩</span> จัดผังห้อง <span id="editor-room-name"></span></h2>
+    <p class="card-hint">
+      <strong>ลาก</strong>ไอเท็มจากแถบข้างล่างมาวางในตาราง หรือ<strong>แตะ</strong>ไอเท็มหนึ่งครั้งแล้วแตะช่องว่างในตาราง ·
+      ลากโต๊ะที่วางแล้วเพื่อย้าย · ลากออกนอกตารางเพื่อลบทิ้ง
+    </p>
+
+    <div class="palette" id="palette" role="toolbar" aria-label="ไอเท็มที่วางได้">
+      <button type="button" class="tool" data-kind="seat">🪑 โต๊ะนักเรียน</button>
+      <button type="button" class="tool" data-kind="teacher">🧑‍🏫 โต๊ะครู</button>
+      <button type="button" class="tool" data-kind="door">🚪 ประตู</button>
+      <button type="button" class="tool" data-kind="board">📋 กระดาน</button>
+      <button type="button" class="tool" data-kind="erase">🧽 ยางลบ</button>
+    </div>
+
+    <div class="row" style="margin-bottom:14px">
+      <div class="field" style="flex:0 1 130px">
+        <label for="cols-input">ตารางกว้าง (ช่อง)</label>
+        <input type="number" id="cols-input" min="4" max="16" step="1">
+      </div>
+      <div class="field" style="flex:0 1 130px">
+        <label for="rows-input">ตารางสูง (ช่อง)</label>
+        <input type="number" id="rows-input" min="3" max="14" step="1">
+      </div>
+    </div>
+
+    <div class="btn-group" style="margin-bottom:14px">
+      <button type="button" class="btn btn-sm btn-yellow" id="preset-40">ผังมาตรฐาน 40 ที่นั่ง</button>
+      <button type="button" class="btn btn-sm" id="fill-all">เติมโต๊ะให้เต็มผัง</button>
+      <button type="button" class="btn btn-sm btn-danger" id="clear-layout">ล้างผังทั้งหมด</button>
+    </div>
+
+    <div class="grid-scroll">
+      <div class="board-strip" aria-hidden="true">หน้าห้อง / กระดาน</div>
+      <div class="room-grid" id="editor-grid" role="group" aria-label="ตารางจัดผังห้อง"></div>
+    </div>
+
+    <div class="stat-row" style="margin-top:14px">
+      <div class="stat"><b id="stat-seats">0</b><span>โต๊ะนักเรียนในผัง</span></div>
+      <div class="stat"><b id="stat-state">บันทึกแล้ว</b><span>สถานะผัง</span></div>
+    </div>
+
+    <div class="btn-group">
+      <button type="button" class="btn btn-primary" id="save-layout">💾 บันทึกผังห้อง</button>
+      <button type="button" class="btn btn-sm" id="revert-layout">ย้อนกลับเป็นผังที่บันทึกไว้</button>
+    </div>
+  </section>
+
+  <!-- ── รายการจอง ── -->
+  <section class="card" id="bookings-card" hidden>
+    <h2><span aria-hidden="true">📖</span> รายการจอง</h2>
+    <div class="row">
+      <div class="field" style="flex:0 1 220px">
+        <label for="booking-date">วันที่</label>
+        <input type="date" id="booking-date">
+      </div>
+    </div>
+
+    <div class="stat-row" style="margin-top:14px">
+      <div class="stat"><b id="stat-booked">0</b><span>จองแล้ววันนี้</span></div>
+      <div class="stat"><b id="stat-empty">0</b><span>ที่นั่งว่าง</span></div>
+    </div>
+
+    <div class="table-scroll">
+      <table id="booking-table">
+        <thead>
+          <tr><th>โต๊ะ</th><th>ชื่อ-นามสกุล</th><th>ชั้น/ห้อง</th><th>รหัส</th><th>เวลาที่จอง</th><th><span class="sr-only">จัดการ</span></th></tr>
+        </thead>
+        <tbody id="booking-rows"></tbody>
+      </table>
+    </div>
+
+    <div class="empty" id="booking-empty">
+      <span class="big" aria-hidden="true">📭</span>
+      ยังไม่มีใครจองในวันนี้
+    </div>
+
+    <div class="btn-group" style="margin-top:14px">
+      <button type="button" class="btn btn-sm btn-teal" id="export-csv">⬇️ ดาวน์โหลด CSV</button>
+      <button type="button" class="btn btn-sm btn-danger" id="clear-day">ล้างการจองของวันนี้</button>
+    </div>
+  </section>
+
+  <!-- ── สำรอง/กู้คืนข้อมูล ── -->
+  <section class="card">
+    <h2><span aria-hidden="true">💾</span> สำรองและย้ายข้อมูล</h2>
+    <p class="card-hint">
+      ข้อมูลทั้งหมดเก็บอยู่ในเบราว์เซอร์เครื่องนี้เท่านั้น ถ้าจะเอาไปเปิดอีกเครื่อง (หรือกันข้อมูลหาย)
+      ให้ส่งออกเป็นไฟล์ แล้วค่อยนำเข้าที่เครื่องปลายทาง
+    </p>
+    <div class="btn-group">
+      <button type="button" class="btn btn-sm" id="export-json">⬇️ ส่งออกไฟล์ข้อมูล</button>
+      <button type="button" class="btn btn-sm" id="import-json">⬆️ นำเข้าไฟล์ข้อมูล</button>
+      <button type="button" class="btn btn-sm btn-danger" id="reset-all">ล้างข้อมูลทั้งหมด</button>
+    </div>
+    <input type="file" id="import-file" accept="application/json,.json" class="sr-only">
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p><strong>โจ๊ะตอง</strong> — หน้าสำหรับครู · หน้านี้ไม่มีระบบรหัสผ่าน เหมาะกับการใช้ในเครื่องของครูเอง</p>
+  </div>
+</footer>
+
+<!-- ── สร้าง/แก้ไขห้อง ── -->
+<dialog class="modal" id="room-modal">
+  <form method="dialog" class="modal-body" id="room-form">
+    <h2 id="room-modal-title">สร้างห้องใหม่</h2>
+    <div class="field" style="margin-bottom:12px">
+      <label for="room-name">ชื่อห้อง</label>
+      <input type="text" id="room-name" placeholder="เช่น ม.5/2 หรือ ห้อง 314" maxlength="40" required>
+    </div>
+    <div class="field">
+      <label for="room-note">คำอธิบายสั้นๆ (ไม่ใส่ก็ได้)</label>
+      <input type="text" id="room-note" placeholder="เช่น อาคาร 3 ชั้น 2" maxlength="80">
+    </div>
+    <p class="form-error" id="room-error"></p>
+    <div class="btn-group">
+      <button type="submit" class="btn btn-primary">บันทึก</button>
+      <button type="button" class="btn" id="room-cancel">ยกเลิก</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast-area" role="status" aria-live="polite"></div>
+
+<script src="assets/js/store.js"></script>
+<script src="assets/js/teacher.js"></script>
+</body>
+</html>

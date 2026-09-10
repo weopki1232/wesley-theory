@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>โจ๊ะตอง — จองโต๊ะในห้องเรียน</title>
+<meta name="description" content="โจ๊ะตอง (จองโต๊ะ) เว็บจองที่นั่งในห้องเรียน เลือกวัน เลือกโต๊ะ จองเสร็จใน 10 วินาที">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪑</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mali:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">🪑</span>
+      <span>
+        <span class="brand-name">โจ๊ะตอง</span>
+        <span class="brand-sub">คำผวนของ “จองโต๊ะ”</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="เมนูหลัก">
+      <a href="index.html" aria-current="page">จองโต๊ะ</a>
+      <a href="teacher.html">สำหรับครู</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <h1>อยากได้ที่นั่งเดิม? <span class="pun">โจ๊ะไว้ก่อน</span></h1>
+    <p>เลือกห้อง เลือกวัน แล้วแตะโต๊ะที่อยากนั่ง — จองทั้งวัน ไม่ต้องสมัครสมาชิก</p>
+  </section>
+
+  <!-- ── ไม่มีห้องในระบบ ── -->
+  <section id="no-room" class="empty" hidden>
+    <span class="big" aria-hidden="true">🏫</span>
+    <p><strong>ยังไม่มีห้องเรียนในระบบ</strong></p>
+    <p>ให้คุณครูไปที่หน้า <a href="teacher.html">สำหรับครู</a> เพื่อสร้างห้องและจัดผังโต๊ะก่อนนะ</p>
+  </section>
+
+  <!-- ── เลือกห้อง + วันที่ ── -->
+  <section class="card" id="picker" hidden>
+    <h2><span aria-hidden="true">🔎</span> เลือกห้องกับวันที่</h2>
+    <div class="row">
+      <div class="field">
+        <label for="room-select">ห้องเรียน</label>
+        <select id="room-select"></select>
+      </div>
+      <div class="field">
+        <label for="date-input">วันที่ต้องการนั่ง</label>
+        <input type="date" id="date-input">
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ผังห้อง ── -->
+  <section class="card" id="room-card" hidden>
+    <h2><span aria-hidden="true">🗺️</span> ผังห้อง <span id="room-title"></span></h2>
+    <p class="card-hint" id="room-note"></p>
+
+    <div class="stat-row">
+      <div class="stat"><b id="stat-total">0</b><span>ที่นั่งทั้งหมด</span></div>
+      <div class="stat"><b id="stat-free">0</b><span>ยังว่าง</span></div>
+      <div class="stat"><b id="stat-taken">0</b><span>ถูกจองแล้ว</span></div>
+    </div>
+
+    <div class="legend">
+      <span><i class="is-free"></i> ว่าง แตะเพื่อจอง</span>
+      <span><i class="is-taken"></i> มีคนจองแล้ว</span>
+      <span><i class="is-mine"></i> ของฉัน</span>
+      <span><i class="is-other"></i> ไม่ใช่ที่นั่ง</span>
+    </div>
+
+    <div class="grid-scroll">
+      <div class="board-strip" aria-hidden="true">หน้าห้อง / กระดาน</div>
+      <div class="room-grid" id="room-grid" role="group" aria-label="ผังที่นั่งในห้องเรียน"></div>
+    </div>
+
+    <div id="no-seat" class="empty" hidden style="margin-top:14px">
+      <span class="big" aria-hidden="true">🤔</span>
+      ห้องนี้ยังไม่มีโต๊ะในผัง — ให้คุณครูจัดผังก่อนนะ
+    </div>
+  </section>
+
+  <!-- ── การจองของฉัน ── -->
+  <section class="card" id="mine-card">
+    <h2><span aria-hidden="true">🎟️</span> การจองของฉัน</h2>
+    <p class="card-hint">จำไว้เฉพาะในเบราว์เซอร์เครื่องนี้ — ถ้าเปลี่ยนเครื่องจะไม่เห็นรายการนี้ แต่การจองยังอยู่</p>
+    <ul class="mine-list" id="mine-list"></ul>
+    <div class="empty" id="mine-empty">
+      <span class="big" aria-hidden="true">🫙</span>
+      ยังไม่ได้จองอะไรเลย เลือกโต๊ะข้างบนได้เลย
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p><strong>โจ๊ะตอง</strong> — เว็บจองโต๊ะในห้องเรียน · ข้อมูลทั้งหมดเก็บอยู่ในเบราว์เซอร์ของคุณเอง</p>
+  </div>
+</footer>
+
+<!-- ── กล่องยืนยันการจอง ── -->
+<dialog class="modal" id="book-modal">
+  <form method="dialog" class="modal-body" id="book-form">
+    <h2><span aria-hidden="true">🪑</span> จองโต๊ะ <span id="modal-seat"></span></h2>
+    <p class="card-hint" id="modal-meta"></p>
+
+    <div class="row">
+      <div class="field">
+        <label for="student-name">ชื่อ-นามสกุล</label>
+        <input type="text" id="student-name" autocomplete="name" maxlength="60" required>
+      </div>
+      <div class="field">
+        <label for="student-class">ชั้น/ห้อง</label>
+        <input type="text" id="student-class" placeholder="เช่น ม.5/2" maxlength="30" required>
+      </div>
+    </div>
+
+    <p class="form-error" id="book-error"></p>
+
+    <div class="btn-group">
+      <button type="submit" class="btn btn-primary" value="confirm">ยืนยันการจอง</button>
+      <button type="button" class="btn" id="book-cancel">ยกเลิก</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ── ผลการจอง ── -->
+<dialog class="modal" id="done-modal">
+  <div class="modal-body">
+    <h2><span aria-hidden="true">🎉</span> โจ๊ะสำเร็จ!</h2>
+    <p id="done-detail"></p>
+    <p>รหัสการจองของเธอคือ <span class="code-chip" id="done-code"></span><br>
+      <span class="card-hint">ถ่ายรูปหน้าจอไว้ เผื่อครูขอดู</span></p>
+    <div class="btn-group">
+      <button type="button" class="btn btn-teal" id="done-close">เยี่ยม!</button>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast-area" role="status" aria-live="polite"></div>
+
+<script src="assets/js/store.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
